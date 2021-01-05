@@ -1,8 +1,16 @@
-# Battlecode 2021 Scaffold
+# Battlecode 2021 Team "Ctrl Alt Defeat"
 
-This is the Battlecode 2021 scaffold, containing an `examplefuncsplayer`. Read https://2021.battlecode.org/getting-started!
+### Run these commands frequently
+1. `git fetch`
+2. `git pull origin master`
+3. `./gradlew update`
+4. `./gradlew build`
 
-### Project Structure
+### For a new branch
+- `git checkout -b <branchname>`
+- `git push origin <branchname>`
+
+## Project Structure
 
 - `README.md`
     This file.
@@ -32,4 +40,5 @@ This is the Battlecode 2021 scaffold, containing an `examplefuncsplayer`. Read h
     Runs a game with the settings in gradle.properties
 - `./gradlew update`
     Update to the newest version! Run every so often
-
+- `./gradlew build`
+    Run this after updating to build the project
