@@ -1,27 +1,35 @@
-package examplefuncsplayer;
+package testBot1;
 import battlecode.common.*;
 
 public strictfp class RobotPlayer {
     static RobotController rc;
 
     static final RobotType[] spawnableRobot = {
-        RobotType.POLITICIAN,
-        RobotType.SLANDERER,
-        RobotType.MUCKRAKER,
+            RobotType.POLITICIAN,
+            RobotType.SLANDERER,
+            RobotType.MUCKRAKER,
     };
 
     static final Direction[] directions = {
-        Direction.NORTH,
-        Direction.NORTHEAST,
-        Direction.EAST,
-        Direction.SOUTHEAST,
-        Direction.SOUTH,
-        Direction.SOUTHWEST,
-        Direction.WEST,
-        Direction.NORTHWEST,
+            Direction.NORTH,
+            Direction.NORTHEAST,
+            Direction.EAST,
+            Direction.SOUTHEAST,
+            Direction.SOUTH,
+            Direction.SOUTHWEST,
+            Direction.WEST,
+            Direction.NORTHWEST,
     };
 
     static int turnCount;
+
+    // Initial variables
+    //Muckrakers
+    static boolean goingNorth;
+    static boolean goingEast;
+    static int totalBeginNorthMuck = 0;
+    static int totalBeginEastMuck = 0;
+
 
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
@@ -62,17 +70,24 @@ public strictfp class RobotPlayer {
     }
 
     static void runEnlightenmentCenter() throws GameActionException {
-        RobotType toBuild = randomSpawnableRobotType();
-        int influence = 50;
-        for (Direction dir : directions) {
-            if (rc.canBuildRobot(toBuild, dir, influence)) {
-                System.out.println("I'm building a " + toBuild);
-                rc.buildRobot(toBuild, dir, influence);
-            } else {
-                break;
+        createInitialMuck();
+    }
+
+    static void createInitialMuck() throws GameActionException {
+        if (totalBeginNorthMuck == 0) {
+            if (rc.canBuildRobot(RobotType.MUCKRAKER, Direction.NORTH, 1)) {
+                rc.buildRobot(RobotType.MUCKRAKER, Direction.NORTH, 1);
+                totalBeginNorthMuck += 1;
+            }
+        }
+        if (totalBeginEastMuck == 0) {
+            if (rc.canBuildRobot(RobotType.MUCKRAKER, Direction.NORTH, 1)) {
+                rc.buildRobot(RobotType.MUCKRAKER, Direction.NORTH, 1);
+                totalBeginEastMuck += 1;
             }
         }
     }
+
 
     static void runPolitician() throws GameActionException {
         Team enemy = rc.getTeam().opponent();
@@ -94,20 +109,24 @@ public strictfp class RobotPlayer {
     }
 
     static void runMuckraker() throws GameActionException {
-        Team enemy = rc.getTeam().opponent();
-        int actionRadius = rc.getType().actionRadiusSquared;
-        for (RobotInfo robot : rc.senseNearbyRobots(actionRadius, enemy)) {
-            if (robot.type.canBeExposed()) {
-                // It's a slanderer... go get them!
-                if (rc.canExpose(robot.location)) {
-                    System.out.println("e x p o s e d");
-                    rc.expose(robot.location);
-                    return;
-                }
+        MapLocation muckLeft = rc.adjacentLocation(Direction.WEST);
+        MapLocation muckSouth = rc.adjacentLocation(Direction.SOUTH);
+        RobotInfo leftRob = rc.senseRobotAtLocation(muckLeft);
+        RobotInfo southRob = rc.senseRobotAtLocation(muckSouth);
+
+        if (!(goingEast || goingNorth)) {
+            if (leftRob != null && leftRob.getType().equals(RobotType.ENLIGHTENMENT_CENTER)) {
+                goingEast = true;
+            } else if (southRob != null && southRob.getType().equals(RobotType.ENLIGHTENMENT_CENTER)) {
+                goingNorth = true;
             }
         }
-        if (tryMove(randomDirection()))
-            System.out.println("I moved!");
+
+        if (goingEast && tryMove(Direction.EAST)) {
+            System.out.println("I moved east");
+        } else if (goingNorth && tryMove(Direction.NORTH)){
+            System.out.println("I moved north");
+        }
     }
 
     /**
