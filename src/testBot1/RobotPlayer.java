@@ -27,6 +27,8 @@ public strictfp class RobotPlayer {
     //Muckrakers
     static boolean goingNorth;
     static boolean goingEast;
+    static boolean createdNorthMuck;
+    static boolean createdEastMuck;
 
 
     /**
@@ -68,15 +70,22 @@ public strictfp class RobotPlayer {
     }
 
     static void runEnlightenmentCenter() throws GameActionException {
-
-        if(rc.canBuildRobot(RobotType.MUCKRAKER, Direction.NORTH, 1)) {
-            rc.buildRobot(RobotType.MUCKRAKER, Direction.NORTH, 1);
-        }
-        if (rc.canBuildRobot(RobotType.MUCKRAKER, Direction.EAST, 1)) {
-            rc.buildRobot(RobotType.MUCKRAKER, Direction.EAST, 1);
+        if (!(createdEastMuck && createdNorthMuck)) {
+            if (!createdNorthMuck) {
+                if (rc.canBuildRobot(RobotType.MUCKRAKER, Direction.NORTH, 1)) {
+                    rc.buildRobot(RobotType.MUCKRAKER, Direction.NORTH, 1);
+                    createdNorthMuck = true;
+                }
+            } else {
+                if (rc.canBuildRobot(RobotType.MUCKRAKER, Direction.EAST, 1)) {
+                    rc.buildRobot(RobotType.MUCKRAKER, Direction.EAST, 1);
+                    createdEastMuck = true;
+                }
+            }
         }
 
     }
+
 
     static void runPolitician() throws GameActionException {
         Team enemy = rc.getTeam().opponent();
