@@ -27,8 +27,8 @@ public strictfp class RobotPlayer {
     //Muckrakers
     static boolean goingNorth;
     static boolean goingEast;
-    static boolean createdNorthMuck;
-    static boolean createdEastMuck;
+    static int totalBeginNorthMuck = 0;
+    static int totalBeginEastMuck = 0;
 
 
     /**
@@ -70,20 +70,22 @@ public strictfp class RobotPlayer {
     }
 
     static void runEnlightenmentCenter() throws GameActionException {
-        if (!(createdEastMuck && createdNorthMuck)) {
-            if (!createdNorthMuck) {
-                if (rc.canBuildRobot(RobotType.MUCKRAKER, Direction.NORTH, 1)) {
-                    rc.buildRobot(RobotType.MUCKRAKER, Direction.NORTH, 1);
-                    createdNorthMuck = true;
-                }
-            } else {
-                if (rc.canBuildRobot(RobotType.MUCKRAKER, Direction.EAST, 1)) {
-                    rc.buildRobot(RobotType.MUCKRAKER, Direction.EAST, 1);
-                    createdEastMuck = true;
-                }
+        createInitialMuck();
+    }
+
+    static void createInitialMuck() throws GameActionException {
+        if (totalBeginNorthMuck == 0) {
+            if (rc.canBuildRobot(RobotType.MUCKRAKER, Direction.NORTH, 1)) {
+                rc.buildRobot(RobotType.MUCKRAKER, Direction.NORTH, 1);
+                totalBeginNorthMuck += 1;
             }
         }
-
+        if (totalBeginEastMuck == 0) {
+            if (rc.canBuildRobot(RobotType.MUCKRAKER, Direction.NORTH, 1)) {
+                rc.buildRobot(RobotType.MUCKRAKER, Direction.NORTH, 1);
+                totalBeginEastMuck += 1;
+            }
+        }
     }
 
 
