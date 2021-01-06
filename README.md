@@ -3,6 +3,9 @@
 ### Run these commands frequently
 1. `git fetch`
 2. `git pull origin master`
+
+or in IntelliJ, VCS -> Update Project -> Merge the incoming changes into the current branch
+
 3. `./gradlew update`
 4. `./gradlew build`
 
