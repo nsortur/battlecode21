@@ -9,13 +9,21 @@ public class EC extends RobotPlayer {
     static int totalBeginEastMuck = 0;
 
     static void run() throws GameActionException {
-        if (totalBeginNorthMuck == 0 && spawnBot(RobotType.MUCKRAKER, Direction.NORTH, 1)) {
-            totalBeginNorthMuck += 1;
-            numMuckrakers++;
+        if (numEnlightenmentCenters == 0) {
+            Util.getNumEC();
         }
-        if (totalBeginEastMuck == 0 && spawnBot(RobotType.MUCKRAKER, Direction.EAST, 1)){
-            totalBeginEastMuck += 1;
-            numMuckrakers++;
+        if (numEnlightenmentCenters == enemyEC.length) {
+            // once we have found all EC's
+        } else {
+            if (totalBeginNorthMuck == 0 && Util.spawnBot(RobotType.MUCKRAKER, Direction.NORTH, 1)) {
+                totalBeginNorthMuck += 1;
+                numMuckrakers++;
+            }
+            if (totalBeginEastMuck == 0 && Util.spawnBot(RobotType.MUCKRAKER, Direction.EAST, 1)){
+                totalBeginEastMuck += 1;
+                numMuckrakers++;
+            }
         }
+
     }
 }
