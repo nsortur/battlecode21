@@ -1,6 +1,10 @@
 package testBot1;
 import battlecode.common.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public strictfp class RobotPlayer {
     static RobotController rc;
 
@@ -70,12 +74,10 @@ public strictfp class RobotPlayer {
     }
 
     static void runEnlightenmentCenter() throws GameActionException {
-        if (totalBeginNorthMuck == 0 && spawnBot(RobotType.MUCKRAKER, Direction.NORTH, 1)) {
-            totalBeginNorthMuck += 1;
+        if (rc.getConviction() > 150){
+            spawnBot(RobotType.POLITICIAN, Direction.EAST, rc.getConviction());
         }
-        if (totalBeginEastMuck == 0 && spawnBot(RobotType.MUCKRAKER, Direction.EAST, 1)){
-            totalBeginEastMuck += 1;
-        }
+
     }
 
     static void runPolitician() throws GameActionException {
@@ -83,6 +85,8 @@ public strictfp class RobotPlayer {
         int actionRadius = rc.getType().actionRadiusSquared;
         int convic = rc.getConviction();
         RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
+
+        /*
         if (attackable.length != 0 && rc.canEmpower(actionRadius) && convic > 10) {
             System.out.println("empowering...");
             rc.empower(actionRadius);
@@ -91,6 +95,30 @@ public strictfp class RobotPlayer {
         }
         if (tryMove(randomDirection()))
             System.out.println("I moved!");
+            */
+        List bots = Arrays.asList(rc.senseNearbyRobots(16)); // convert to arraylist for easier use
+        ArrayList<RobotType> types = new ArrayList<RobotType>();
+        // turn the list into the types of the robots
+        for (int i = 0; i < bots.size(); i++) {
+            RobotInfo type = (RobotInfo) bots.get(i);
+            System.out.println();
+            System.out.println();
+            System.out.println();
+            System.out.println();
+            System.out.println();
+            types.add(type.getType());
+            System.out.println(types.get(i));
+        }
+        if(types.contains(RobotType.ENLIGHTENMENT_CENTER)){
+            System.out.println("Contains");
+            // figure out empower
+            if (rc.canEmpower(16)){
+                System.out.println("can empower");
+                rc.empower(16);
+            }
+
+        }
+         tryMove(Direction.EAST);
     }
 
     static void runSlanderer() throws GameActionException {
@@ -106,6 +134,7 @@ public strictfp class RobotPlayer {
         MapLocation muckSouth = rc.adjacentLocation(Direction.SOUTH);
         RobotInfo leftRob = rc.senseRobotAtLocation(muckLeft);
         RobotInfo southRob = rc.senseRobotAtLocation(muckSouth);
+
 
         if (!(goingEast || goingNorth)) {
             if (leftRob != null && leftRob.getType().equals(RobotType.ENLIGHTENMENT_CENTER)) {
