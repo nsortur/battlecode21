@@ -70,30 +70,20 @@ public strictfp class RobotPlayer {
     }
 
     static void runEnlightenmentCenter() throws GameActionException {
-        createInitialMuck();
-    }
-
-    static void createInitialMuck() throws GameActionException {
-        if (totalBeginNorthMuck == 0) {
-            if (rc.canBuildRobot(RobotType.MUCKRAKER, Direction.NORTH, 1)) {
-                rc.buildRobot(RobotType.MUCKRAKER, Direction.NORTH, 1);
-                totalBeginNorthMuck += 1;
-            }
+        if (totalBeginNorthMuck == 0 && spawnBot(RobotType.MUCKRAKER, Direction.NORTH, 1)) {
+            totalBeginNorthMuck += 1;
         }
-        if (totalBeginEastMuck == 0) {
-            if (rc.canBuildRobot(RobotType.MUCKRAKER, Direction.NORTH, 1)) {
-                rc.buildRobot(RobotType.MUCKRAKER, Direction.NORTH, 1);
-                totalBeginEastMuck += 1;
-            }
+        if (totalBeginEastMuck == 0 && spawnBot(RobotType.MUCKRAKER, Direction.EAST, 1)){
+            totalBeginEastMuck += 1;
         }
     }
-
 
     static void runPolitician() throws GameActionException {
         Team enemy = rc.getTeam().opponent();
         int actionRadius = rc.getType().actionRadiusSquared;
+        int convic = rc.getConviction();
         RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
-        if (attackable.length != 0 && rc.canEmpower(actionRadius)) {
+        if (attackable.length != 0 && rc.canEmpower(actionRadius) && convic > 10) {
             System.out.println("empowering...");
             rc.empower(actionRadius);
             System.out.println("empowered");
@@ -104,8 +94,11 @@ public strictfp class RobotPlayer {
     }
 
     static void runSlanderer() throws GameActionException {
-        if (tryMove(randomDirection()))
-            System.out.println("I moved!");
+        //just some random destination for now
+        if (moveNaive(new MapLocation(10010, 23942))){
+            System.out.println("Reached destination!");
+        }
+
     }
 
     static void runMuckraker() throws GameActionException {
@@ -127,6 +120,45 @@ public strictfp class RobotPlayer {
         } else if (goingNorth && tryMove(Direction.NORTH)){
             System.out.println("I moved north");
         }
+    }
+
+    /**
+     * Spawns a bot for an enlightenment center
+     *
+     * @param type: type to spawn
+     * @param dir: direction to spawn in
+     * @param influence: influence to transfer to bot
+     *
+     * @return true if spawned
+     * @throws GameActionException
+     */
+    static boolean spawnBot(RobotType type, Direction dir, int influence) throws GameActionException{
+        if (!rc.getType().equals(RobotType.ENLIGHTENMENT_CENTER)){
+            System.out.println("not EC, trying to spawn from " + rc.getType());
+        }
+        if (rc.canBuildRobot(type, dir, influence)) {
+            rc.buildRobot(type, dir, influence);
+            return true;
+        } else return false;
+    }
+
+    /**
+     * Moves to destination disregarding tile passibility
+     *
+     * @param dest: Destination to move towards
+     *
+     * @return true if destination is reached
+     * @throws GameActionException
+     */
+    static boolean moveNaive(MapLocation dest) throws GameActionException{
+        MapLocation curLoc = rc.getLocation();
+
+        if (!curLoc.equals(dest)){
+            Direction toDest = curLoc.directionTo(dest);
+            tryMove(toDest);
+            return false;
+
+        } else return true;
     }
 
     /**
