@@ -29,7 +29,9 @@ public strictfp class RobotPlayer {
     static int numPoliticians = 0;
     static int numEnlightenmentCenters; // figure out how to calculate this value (kind of did)
 
-    static MapLocation[] enemyEC;
+    // do we need the location of our own EC's?
+
+    static MapLocation[] enemyEC = new MapLocation[8]; // total number of potential enemy ec's
     static int[] flagEC; // the integer value of the EC's flag
 
 

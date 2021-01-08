@@ -1,9 +1,6 @@
 package testBot1;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotType;
+import battlecode.common.*;
 
 public class Util extends RobotPlayer {
     /**
@@ -79,16 +76,7 @@ public class Util extends RobotPlayer {
         } else return false;
     }
 
-    /**
-     *
-     * @throws GameActionException
-     */
-    static void findEnemyEC() throws GameActionException {
-        // search surroundings, if found EC then report it
-        // if does not find EC, get from flags
-        // so --> if team ec says we have ecs in messages then get it from the flag (location to)
-        // and if the team ec does not we need to keep searching (so move forward)
-    }
+
 
     static void getNumEC() throws GameActionException {
         // check flag - if it says number of ec's return that
