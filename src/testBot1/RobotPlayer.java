@@ -96,7 +96,7 @@ public strictfp class RobotPlayer {
         if (tryMove(randomDirection()))
             System.out.println("I moved!");
             */
-        List bots = Arrays.asList(rc.senseNearbyRobots(16)); // convert to arraylist for easier use
+        List bots = Arrays.asList(rc.senseNearbyRobots(4, rc.getTeam().opponent())); // convert to arraylist for easier use
         ArrayList<RobotType> types = new ArrayList<RobotType>();
         // turn the list into the types of the robots
         for (int i = 0; i < bots.size(); i++) {
@@ -112,9 +112,9 @@ public strictfp class RobotPlayer {
         if(types.contains(RobotType.ENLIGHTENMENT_CENTER)){
             System.out.println("Contains");
             // figure out empower
-            if (rc.canEmpower(16)){
+            if (rc.canEmpower(4)){
                 System.out.println("can empower");
-                rc.empower(16);
+                rc.empower(4);
             }
 
         }
