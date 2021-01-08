@@ -108,8 +108,9 @@ public strictfp class RobotPlayer {
                 }
             }
         }
-        if (tryMove(randomDirection()))
-            System.out.println("I moved!");
+        if (tryMove(randomDirection())) {
+            // System.out.println("I moved!");
+        }
     }
 
     /**

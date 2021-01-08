@@ -12,7 +12,7 @@ public class EC extends RobotPlayer {
         if (numEnlightenmentCenters == 0) {
             Util.getNumEC();
         }
-        if (numEnlightenmentCenters == enemyEC.length) {
+        if (numEnlightenmentCenters == enemyEC.size()) {
             // once we have found all EC's
         } else {
             if (totalBeginNorthMuck == 0 && Util.spawnBot(RobotType.MUCKRAKER, Direction.NORTH, 1)) {

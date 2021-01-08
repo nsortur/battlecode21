@@ -1,6 +1,7 @@
 package testBot1;
 import battlecode.common.*;
 
+import java.util.ArrayList;
 
 
 public strictfp class RobotPlayer {
@@ -31,7 +32,7 @@ public strictfp class RobotPlayer {
 
     // do we need the location of our own EC's?
 
-    static MapLocation[] enemyEC = new MapLocation[8]; // total number of potential enemy ec's
+    static ArrayList<MapLocation> enemyEC = new ArrayList<>(); // total number of potential enemy ec's
     static int[] flagEC; // the integer value of the EC's flag
 
 
@@ -47,14 +48,14 @@ public strictfp class RobotPlayer {
 
         turnCount = 0;
 
-        System.out.println("I'm a " + rc.getType() + " and I just got created! The turn count is " + turnCount);
+        // System.out.println("I'm a " + rc.getType() + " and I just got created! The turn count is " + turnCount);
         while (true) {
             turnCount += 1;
             // Try/catch blocks stop unhandled exceptions, which cause your robot to freeze
             try {
                 // Here, we've separated the controls into a different method for each RobotType.
                 // You may rewrite this into your own control structure if you wish.
-                System.out.println("I'm a " + rc.getType() + "! Location " + rc.getLocation());
+                // System.out.println("I'm a " + rc.getType() + "! Location " + rc.getLocation());
                 switch (rc.getType()) {
                     case ENLIGHTENMENT_CENTER: EC.run(); break;
                     case POLITICIAN:           Politician.run();          break;

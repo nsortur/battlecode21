@@ -7,8 +7,9 @@ public class Muckraker extends RobotPlayer {
     static boolean goingNorth;
 
     static void run() throws GameActionException {
-        if (enemyEC.length == 0) {
-            findEnemyEC();
+        if (enemyEC.size() == 0) {
+            Util.moveNaive(new MapLocation(10026, 23926));
+            System.out.println(isCloseToEC());
         }
     }
 
@@ -39,7 +40,7 @@ public class Muckraker extends RobotPlayer {
         RobotInfo[] robots = rc.senseNearbyRobots();
         for (RobotInfo robot : robots) {
             if (robot.type == RobotType.ENLIGHTENMENT_CENTER && robot.team != rc.getTeam()) {
-                rc.setFlag(concat(robot.getLocation().x, robot.getLocation().y));
+                rc.setFlag(concat(robot.getLocation().x, robot.getLocation().y) / 100);
                 return true;
             }
         }

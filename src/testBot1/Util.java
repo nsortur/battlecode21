@@ -79,6 +79,7 @@ public class Util extends RobotPlayer {
 
 
     static void getNumEC() throws GameActionException {
+        numEnlightenmentCenters = 3;
         // check flag - if it says number of ec's return that
         // if it does not then equal it to robot count (since this needs to happen immediately)
     }
