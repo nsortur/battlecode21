@@ -24,6 +24,13 @@ public strictfp class RobotPlayer {
             Direction.NORTHWEST,
     };
 
+    static final Direction[] cardDirections = {
+            Direction.NORTH,
+            Direction.SOUTH,
+            Direction.EAST,
+            Direction.WEST,
+    };
+
     static int turnCount;
     static int numMuckrakers = 0;
     static int numSlanderers = 0;
