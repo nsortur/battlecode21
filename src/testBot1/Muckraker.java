@@ -8,9 +8,9 @@ public class Muckraker extends RobotPlayer {
 
     static void run() throws GameActionException {
         if (enemyEC.size() == 0) {
-            // for testing purposes
+            killSlanderer();
+            isCloseToEC();
             Util.moveNaive(new MapLocation(10026, 23926));
-            System.out.println(isCloseToEC());
         }
     }
 
@@ -47,6 +47,21 @@ public class Muckraker extends RobotPlayer {
             }
         }
         return false;
+    }
+
+    /**
+     * Kills a slanderer if in action radius
+     *
+     * @throws GameActionException
+     */
+
+    static void killSlanderer() throws GameActionException {
+        RobotInfo[] robots = rc.senseNearbyRobots(40); // sense all robots in action radius
+        for (RobotInfo robot: robots) {
+            if (robot.type == RobotType.SLANDERER && robot.team != rc.getTeam()) {
+                if (rc.canExpose(robot.location)) rc.expose(robot.location);
+            }
+        }
     }
 
     /**

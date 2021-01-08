@@ -2,11 +2,12 @@ package testBot1;
 
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
+import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 
 public class EC extends RobotPlayer {
-    static int totalBeginNorthMuck = 0;
-    static int totalBeginEastMuck = 0;
+
+    static boolean[] scoutsSpawned = new boolean[8];
 
     static void run() throws GameActionException {
         if (numEnlightenmentCenters == 0) {
@@ -15,15 +16,18 @@ public class EC extends RobotPlayer {
         if (numEnlightenmentCenters == enemyEC.size()) {
             // once we have found all EC's
         } else {
-            if (totalBeginNorthMuck == 0 && Util.spawnBot(RobotType.MUCKRAKER, Direction.NORTH, 1)) {
-                totalBeginNorthMuck += 1;
-                numMuckrakers++;
-            }
-            if (totalBeginEastMuck == 0 && Util.spawnBot(RobotType.MUCKRAKER, Direction.EAST, 1)){
-                totalBeginEastMuck += 1;
-                numMuckrakers++;
-            }
+            spawnScout();
         }
 
+    }
+
+    static void spawnScout() throws GameActionException {
+        for (int i = 0; i < 8; i++) {
+            if (!scoutsSpawned[i]) {
+                if (Util.spawnBot(RobotType.MUCKRAKER, directions[i], 1)) scoutsSpawned[i] = true;
+                // flag shit
+                break;
+            }
+        }
     }
 }
