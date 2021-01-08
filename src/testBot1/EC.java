@@ -17,9 +17,16 @@ public class EC extends RobotPlayer {
             // once we have found all EC's
         } else {
             spawnScout();
+            // changes
         }
 
     }
+
+    /**
+     * Spawns 8 scouts in different directions
+     *
+     * @throws GameActionException
+     */
 
     static void spawnScout() throws GameActionException {
         for (int i = 0; i < 8; i++) {
