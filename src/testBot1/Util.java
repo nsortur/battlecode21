@@ -76,12 +76,31 @@ public class Util extends RobotPlayer {
         } else return false;
     }
 
-
-
     static void getNumEC() throws GameActionException {
         numEnlightenmentCenters = 3;
         // check flag - if it says number of ec's return that
         // if it does not then equal it to robot count (since this needs to happen immediately)
+    }
+
+    /**
+     * Checks if a bot is next to an edge
+     *
+     * @return true if it's next to an edge
+     * @throws GameActionException
+     */
+    static boolean isNextToEdge() throws GameActionException{
+        boolean hitEdge = false;
+
+        for(Direction dir : cardDirections) {
+            MapLocation adjLoc = rc.adjacentLocation(dir);
+            hitEdge = !rc.onTheMap(adjLoc);
+            if (hitEdge) {
+                rc.setFlag(2); //some flag that tells we've hit an edge
+                break;
+            }
+        }
+
+        return hitEdge;
     }
 
 }
