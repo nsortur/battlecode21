@@ -49,13 +49,9 @@ public class Muckraker extends RobotPlayer {
      * @throws GameActionException
      */
     static Direction getScoutDirection() throws GameActionException {
-        ecID = getECID();
-        int ecFlag = -1;
-        if (rc.canGetFlag(ecID)) {
-            ecFlag = rc.getFlag(ecID);
-        } else {
-            throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Cannot get flag");
-        }
+        ecID = Util.getECID();
+        int ecFlag = Util.tryGetFlag(ecID);
+
         switch (ecFlag) {
             case 11:
                 return Direction.NORTH;
@@ -103,7 +99,6 @@ public class Muckraker extends RobotPlayer {
      * @return returns true if killed a slanderer
      * @throws GameActionException
      */
-
     static boolean killSlanderer() throws GameActionException {
         boolean killedSlanderer = false;
 
@@ -115,23 +110,6 @@ public class Muckraker extends RobotPlayer {
             }
         }
         return killedSlanderer;
-    }
-
-    /**
-     * Gets the id of an EC
-     *
-     * @return gets the EC ID that the robot spawned from
-     * @throws GameActionException
-     */
-
-    static int getECID() throws GameActionException {
-        RobotInfo[] robots = rc.senseNearbyRobots();
-        for (RobotInfo robot : robots) {
-            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && robot.team == rc.getTeam()) {
-                return robot.ID;
-            }
-        }
-        throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "No enlightenmnet center");
     }
 
     /**

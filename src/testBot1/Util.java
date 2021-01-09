@@ -13,6 +13,9 @@ public class Util extends RobotPlayer {
      * @return true if spawned
      * @throws GameActionException
      */
+
+
+
     static boolean spawnBot(RobotType type, Direction dir, int influence) throws GameActionException{
         if (!rc.getType().equals(RobotType.ENLIGHTENMENT_CENTER)){
             System.out.println("not EC, trying to spawn from " + rc.getType());
@@ -110,11 +113,40 @@ public class Util extends RobotPlayer {
      * @param value of the flag
      * @throws GameActionException
      */
-    static void tryFlag(int value) throws GameActionException {
+    static boolean trySetFlag(int value) throws GameActionException {
         if (rc.canSetFlag(value)) {
             rc.setFlag(value);
-        }
+            return true;
+        } else return false;
     }
 
+    /**
+     * Gets a flag
+     *
+     * @param id of the robot
+     * @return the flag value
+     * @throws GameActionException
+     */
+    static int tryGetFlag(int id) throws GameActionException {
+        if (rc.canGetFlag(id)) {
+            return rc.getFlag(id);
+        } else throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Cannot get flag");
+    }
+
+    /**
+     * Gets the id of an EC
+     *
+     * @return gets the EC ID that the robot spawned from
+     * @throws GameActionException
+     */
+    static int getECID() throws GameActionException {
+        RobotInfo[] robots = rc.senseNearbyRobots();
+        for (RobotInfo robot : robots) {
+            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && robot.team == rc.getTeam()) {
+                return robot.ID;
+            }
+        }
+        throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "No enlightenment center");
+    }
 
 }

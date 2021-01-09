@@ -42,6 +42,9 @@ public strictfp class RobotPlayer {
     static ArrayList<MapLocation> enemyEC = new ArrayList<>(); // total number of potential enemy ec's
     static int[] flagEC; // the integer value of the EC's flag
 
+    // secret area
+    // hit edge
+    static int edgeCode;
 
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
