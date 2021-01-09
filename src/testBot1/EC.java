@@ -1,10 +1,14 @@
 package testBot1;
 
-import battlecode.common.*;
+import battlecode.common.Direction;
+import battlecode.common.GameActionException;
+import battlecode.common.MapLocation;
+import battlecode.common.RobotType;
 
 import java.util.ArrayList;
 
 public class EC extends RobotPlayer {
+
 
     static boolean[] scoutsSpawned = new boolean[8];
     static ArrayList<Integer> scoutIDs = new ArrayList<Integer>();
@@ -20,6 +24,7 @@ public class EC extends RobotPlayer {
             if (scoutID != -1) scoutIDs.add(scoutID);
 
         }
+        Util.spawnBot(RobotType.POLITICIAN, Direction.EAST, 200);
 
     }
 

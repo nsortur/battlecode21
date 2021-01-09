@@ -68,7 +68,7 @@ public strictfp class RobotPlayer {
                 // You may rewrite this into your own control structure if you wish.
                 // System.out.println("I'm a " + rc.getType() + "! Location " + rc.getLocation());
                 switch (rc.getType()) {
-                    case ENLIGHTENMENT_CENTER: EC.run(); break;
+                    case ENLIGHTENMENT_CENTER: EC.run();                  break;
                     case POLITICIAN:           Politician.run();          break;
                     case SLANDERER:            Slanderer.run();           break;
                     case MUCKRAKER:            Muckraker.run();           break;
