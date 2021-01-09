@@ -2,6 +2,8 @@ package testBot1;
 
 import battlecode.common.*;
 
+import java.util.ArrayList;
+
 public class Util extends RobotPlayer {
     /**
      * Spawns a bot for an enlightenment center
@@ -147,6 +149,72 @@ public class Util extends RobotPlayer {
             }
         }
         throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "No enlightenment center");
+    }
+
+
+    /**
+     * Moves the robot from its current location to the target location
+     *
+     * @param the location of the target
+     * @throws GameActionException
+     */
+
+    static double passabilityThreshold = 0.7;
+    static Direction bugDirection = null;
+    static ArrayList<Direction> visited = new ArrayList<Direction>();
+    // if you visit location twice then decrease threshold
+
+    static void goTo(MapLocation target) throws GameActionException {
+        Direction d = rc.getLocation().directionTo(target);
+        if (rc.getLocation().equals(target)){
+            visited.clear();
+            return; // we have arrived at location
+        }
+
+        else if (rc.isReady()){
+            if (rc.canMove(d) && rc.sensePassability(rc.getLocation().add(d)) >= passabilityThreshold){
+                rc.move(d);
+                bugDirection = null;
+            }
+            else{
+                if (bugDirection == null){
+                    bugDirection = d.rotateRight();
+                }
+                for (int i = 0; i < 8; ++i){
+                    if (rc.canMove(bugDirection) && rc.sensePassability(rc.getLocation().add(bugDirection)) >= passabilityThreshold){
+                        rc.move(bugDirection);
+                        break;
+                    }
+                    bugDirection = bugDirection.rotateLeft();
+                }
+                bugDirection = bugDirection.rotateRight();
+            }
+        }
+    }
+
+    static void optimalGo(MapLocation target) throws GameActionException {
+        if (rc.getLocation().equals(target)){
+            return; // we have arrived at location
+        }
+        final Direction line = rc.getLocation().directionTo(target);
+
+        if (rc.isReady()){
+            if (rc.canMove(line) && rc.sensePassability(rc.getLocation().add(line)) >= passabilityThreshold){
+                rc.move(line);
+            }
+            else{
+                for (int i = 0; i < 8; i++) {
+                    if (rc.canMove(RobotPlayer.directions[i]) && rc.sensePassability(rc.getLocation().add(RobotPlayer.directions[i])) >= passabilityThreshold){
+                        rc.move(RobotPlayer.directions[i]);
+                        break;
+                    }
+                    else{
+                        passabilityThreshold -= .1;
+                    }
+
+                }
+            }
+        }
     }
 
 }

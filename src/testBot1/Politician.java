@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static testBot1.Util.tryMove;
-
 public class Politician extends RobotPlayer {
 
     static void run() throws GameActionException {
@@ -29,25 +27,15 @@ public class Politician extends RobotPlayer {
         List bots = Arrays.asList(rc.senseNearbyRobots(4, rc.getTeam().opponent())); // convert to arraylist for easier use
         ArrayList<RobotType> types = new ArrayList<RobotType>();
         // turn the list into the types of the robots
-        for (int i = 0; i < bots.size(); i++) {
-            RobotInfo type = (RobotInfo) bots.get(i);
-            System.out.println();
-            System.out.println();
-            System.out.println();
-            System.out.println();
-            System.out.println();
-            types.add(type.getType());
-            System.out.println(types.get(i));
-        }
+
         if(types.contains(RobotType.ENLIGHTENMENT_CENTER)){
             System.out.println("Contains");
-            // figure out empower
-            if (rc.canEmpower(4)){
-                System.out.println("can empower");
-                rc.empower(4);
+            if (rc.canEmpower(6)){
+                rc.empower(6);
             }
 
         }
-        tryMove(Direction.EAST);
+        Util.optimalGo(new MapLocation(10026, 23948));
+
     }
 }
