@@ -84,5 +84,37 @@ public class Util extends RobotPlayer {
         // if it does not then equal it to robot count (since this needs to happen immediately)
     }
 
+    /**
+     * Checks if a bot is next to an edge
+     *
+     * @return true if it's next to an edge
+     * @throws GameActionException
+     */
+    static boolean isNextToEdge() throws GameActionException{
+        boolean hitEdge = false;
+
+        for(Direction dir : cardDirections) {
+            MapLocation adjLoc = rc.adjacentLocation(dir);
+            hitEdge = !rc.onTheMap(adjLoc);
+            if (hitEdge) {
+                rc.setFlag(2); //some flag that tells we've hit an edge
+                break;
+            }
+        }
+
+        return hitEdge;
+    }
+
+    /**
+     * Sets a flag
+     * @param value of the flag
+     * @throws GameActionException
+     */
+    static void tryFlag(int value) throws GameActionException {
+        if (rc.canSetFlag(value)) {
+            rc.setFlag(value);
+        }
+    }
+
 
 }

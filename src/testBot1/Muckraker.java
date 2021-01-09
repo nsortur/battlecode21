@@ -17,17 +17,30 @@ public class Muckraker extends RobotPlayer {
             17,
             18,
     };
+    // direction for scout
+    static Direction scoutDir;
 
     static void run() throws GameActionException {
-        Direction direction = Direction.NORTH;
-        if (turnCount == 0) {
-            direction = getScoutDirection();
+        runScout(); // later on add if condition in case not scout
+    }
+
+    /**
+     * Runs all scout activity, including getting the direction, killing slanderers,
+     * checking to see if close to an EC or an edge
+     * @throws GameActionException
+     */
+    static void runScout() throws GameActionException {
+        if (scoutDir == null) {
+            scoutDir = getScoutDirection();
         }
         killSlanderer();
-        if (isCloseToEC() || isNextToEdge()) {
-
+        if (isCloseToEC() || Util.isNextToEdge()) {
+            // do code once at edge/found EC
+            System.out.println("Done with scout behavior");
+        } else {
+            Util.tryMove(scoutDir);
+            // Util.moveNaive(new MapLocation(10026, 23926));
         }
-        Util.moveNaive(new MapLocation(10026, 23926));
     }
 
     /**
@@ -35,7 +48,6 @@ public class Muckraker extends RobotPlayer {
      * @return a direction
      * @throws GameActionException
      */
-
     static Direction getScoutDirection() throws GameActionException {
         ecID = getECID();
         int ecFlag = -1;
@@ -66,22 +78,6 @@ public class Muckraker extends RobotPlayer {
         }
     }
 
-    /**
-     *
-     * @throws GameActionException
-     */
-    static void findEnemyEC() throws GameActionException {
-
-        // SEARCH SURROUNDINGS FOR ENEMY EC
-        // CHECKS TEAM EC TO SEE IF WE HAVE FOUND THEM ALREADY
-        // MOVE IN DIRECTION
-
-
-        // search surroundings, if found EC then report it
-        // if does not find EC, get from flags
-        // so --> if team ec says we have ecs in messages then get it from the flag (location to)
-        // and if the team ec does not we need to keep searching (so move forward)
-    }
 
     /**
      * Checks to see if a robot is close to an EC, and if it is sets the robot's flag

@@ -31,10 +31,31 @@ public class EC extends RobotPlayer {
     static void spawnScout() throws GameActionException {
         for (int i = 0; i < 8; i++) {
             if (!scoutsSpawned[i]) {
-                if (Util.spawnBot(RobotType.MUCKRAKER, directions[i], 1)) scoutsSpawned[i] = true;
-                // flag shit
+                if (Util.spawnBot(RobotType.MUCKRAKER, directions[i], 1)) {
+                    scoutsSpawned[i] = true;
+                    setFlagScout(directions[i]);
+                }
                 break;
             }
+        }
+    }
+
+    /**
+     * Sets the EC's flag when creating a scout
+     * @throws GameActionException
+     */
+    static void setFlagScout(Direction dir) throws GameActionException {
+        switch (dir) {
+            case NORTH: Util.tryFlag(11); break;
+            case NORTHEAST: Util.tryFlag(12); break;
+            case EAST: Util.tryFlag(13); break;
+            case SOUTHEAST: Util.tryFlag(14); break;
+            case SOUTH: Util.tryFlag(15); break;
+            case SOUTHWEST: Util.tryFlag(16); break;
+            case WEST: Util.tryFlag(17); break;
+            case NORTHWEST: Util.tryFlag(18); break;
+            default:
+                throw new IllegalStateException("Unexpected direction: " + dir);
         }
     }
 }
