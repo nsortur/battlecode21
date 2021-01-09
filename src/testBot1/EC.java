@@ -42,6 +42,8 @@ public class EC extends RobotPlayer {
 
     /**
      * Sets the EC's flag when creating a scout
+     *
+     * @param dir the direction the scout should move in
      * @throws GameActionException
      */
     static void setFlagScout(Direction dir) throws GameActionException {
