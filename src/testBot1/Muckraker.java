@@ -129,6 +129,7 @@ public class Muckraker extends RobotPlayer {
         for (RobotInfo robot: robots) {
             if (robot.type == RobotType.SLANDERER && robot.team != rc.getTeam()) {
                 if (rc.canExpose(robot.location)) rc.expose(robot.location);
+                // ** ADD FLAG THAT TELLS EC KILLED SLANDERER **
                 killedSlanderer = true;
             }
         }
