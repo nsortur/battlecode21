@@ -3,33 +3,71 @@ package testBot1;
 import battlecode.common.*;
 
 public class Muckraker extends RobotPlayer {
-    static boolean goingEast;
-    static boolean goingNorth;
+    // our enlightenment center's ID (one muckraker spawned from)
+    static int ecID;
+
+    // direction for scout
+    static Direction scoutDir;
+
+    // location of spawning EC
+    static MapLocation homeECLoc;
 
     static void run() throws GameActionException {
-        if (enemyEC.size() == 0) {
-            // for testing purposes
-            Util.moveNaive(new MapLocation(10026, 23926));
-            System.out.println(isCloseToEC());
+        runScout(); // later on add if condition in case not scout
+    }
+
+    /**
+     * Runs all scout activity, including getting the direction, killing slanderers,
+     * checking to see if close to an EC or an edge
+     * @throws GameActionException
+     */
+    static void runScout() throws GameActionException {
+        if (scoutDir == null) {
+            scoutDir = getScoutDirection();
+            // EC is 1 unit in opposite direction scout is heading at start
+            homeECLoc = rc.getLocation().subtract(scoutDir);
+        }
+        tryKillSlanderer();
+        if (isCloseToEC() || isNextToEdge()) {
+            // do code once at edge/found EC
+            System.out.println("Done with scout behavior");
+        } else {
+            Util.tryMove(scoutDir);
+            // Util.moveNaive(new MapLocation(10026, 23926));
         }
     }
 
     /**
-     *
+     * Calculates direction scout needs to move in
+     * @return a direction
      * @throws GameActionException
      */
-    static void findEnemyEC() throws GameActionException {
+    static Direction getScoutDirection() throws GameActionException {
+        ecID = Util.getECID();
+        int ecFlag = Util.tryGetFlag(ecID);
 
-        // SEARCH SURROUNDINGS FOR ENEMY EC
-        // CHECKS TEAM EC TO SEE IF WE HAVE FOUND THEM ALREADY
-        // MOVE IN DIRECTION
-
-
-        // search surroundings, if found EC then report it
-        // if does not find EC, get from flags
-        // so --> if team ec says we have ecs in messages then get it from the flag (location to)
-        // and if the team ec does not we need to keep searching (so move forward)
+        switch (ecFlag) {
+            case 11:
+                return Direction.NORTH;
+            case 12:
+                return Direction.NORTHEAST;
+            case 13:
+                return Direction.EAST;
+            case 14:
+                return Direction.SOUTHEAST;
+            case 15:
+                return Direction.SOUTH;
+            case 16:
+                return Direction.SOUTHWEST;
+            case 17:
+                return Direction.WEST;
+            case 18:
+                return Direction.NORTHWEST;
+            default:
+                throw new IllegalStateException("Unexpected value: " + ecFlag);
+        }
     }
+
 
     /**
      * Checks to see if a robot is close to an EC, and if it is sets the robot's flag
@@ -42,7 +80,7 @@ public class Muckraker extends RobotPlayer {
         for (RobotInfo robot : robots) {
             if (robot.type == RobotType.ENLIGHTENMENT_CENTER && robot.team != rc.getTeam()) {
                 // divide by 100 is temporary secret code, make more complex later
-                rc.setFlag(concat(robot.getLocation().x, robot.getLocation().y) / 100);
+                rc.setFlag(Util.concatInts(robot.getLocation().x, robot.getLocation().y) / 100);
                 return true;
             }
         }
@@ -50,27 +88,46 @@ public class Muckraker extends RobotPlayer {
     }
 
     /**
-     * Concatenates 2 integers to be 1 integer
+     * Kills a slanderer if in action radius
      *
-     * @param a integer
-     * @param b integer
-     * @return ab, concatenated integer
+     * @return returns true if killed a slanderer
+     * @throws GameActionException
      */
-    static int concat(int a, int b)
-    {
+    static boolean tryKillSlanderer() throws GameActionException {
+        boolean killedSlanderer = false;
 
-        // Convert both the integers to string
-        String s1 = Integer.toString(a);
-        String s2 = Integer.toString(b);
+        RobotInfo[] robots = rc.senseNearbyRobots(40); // sense all robots in action radius
+        for (RobotInfo robot: robots) {
+            if (robot.type == RobotType.SLANDERER && robot.team != rc.getTeam()) {
+                if (rc.canExpose(robot.location)) rc.expose(robot.location);
+                killedSlanderer = true;
+            }
+        }
+        return killedSlanderer;
+    }
 
-        // Concatenate both strings
-        String s = s1 + s2;
+    /**
+     * Checks if a scout is next to an edge
+     *
+     * @return true if it's next to an edge
+     * @throws GameActionException
+     */
+    static boolean isNextToEdge() throws GameActionException{
+        boolean hitEdge = false;
 
-        // Convert the concatenated string
-        // to integer
-        int c = Integer.parseInt(s);
+        for(Direction dir : cardDirections) {
+            MapLocation adjLoc = rc.adjacentLocation(dir);
+            hitEdge = !rc.onTheMap(adjLoc);
 
-        // return the formed integer
-        return c;
+            if (hitEdge) {
+                int x_offset = rc.getLocation().x - homeECLoc.x;
+                int y_offset = rc.getLocation().y - homeECLoc.y;
+
+                if (Util.trySetFlag(Util.encryptOffsets(x_offset, y_offset))) System.out.println("Flag set!");
+                break;
+            }
+        }
+
+        return hitEdge;
     }
 }
