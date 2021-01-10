@@ -2,9 +2,14 @@ package testBot1;
 
 import battlecode.common.*;
 
-import java.util.ArrayList;
+import java.util.*;
+
 
 public class Util extends RobotPlayer {
+
+
+
+
     /**
      * Spawns a bot for an enlightenment center
      *
@@ -192,7 +197,14 @@ public class Util extends RobotPlayer {
         }
     }
 
-    static void optimalGo(MapLocation target) throws GameActionException {
+    /**
+     * Moves the robot from its current location to the target location
+     *
+     * @param  target's location
+     * @throws GameActionException
+     */
+
+    static void go2(MapLocation target) throws GameActionException {
         if (rc.getLocation().equals(target)){
             return; // we have arrived at location
         }
@@ -215,6 +227,39 @@ public class Util extends RobotPlayer {
                 }
             }
         }
+    }
+
+    static void greedyPath(MapLocation target) throws GameActionException{
+        if (rc.getLocation().equals(target)){
+            return; // we have arrived at location
+        }
+        Direction direction = rc.getLocation().directionTo(target);
+        try{
+            if (rc.isReady()){
+                Hashtable<Integer, Direction> areas = new Hashtable<>();
+                for (int i = 0; i < 3; i++) {
+                    areas.put(i, directionsList.get((directionsList.indexOf(direction) - 1 + i) % directionsList.size()));
+                }
+                HashMap<Double, MapLocation> possibleDirections = new HashMap<>();
+                for (int i = 0; i < 3; i++) {
+                    possibleDirections.put(rc.sensePassability(rc.getLocation().add(areas.get(i))), rc.getLocation().add(areas.get(i)));
+                }
+                List keys = new ArrayList(possibleDirections.keySet());
+                Collections.sort(keys);
+                System.out.println("Areas:" + areas);
+                System.out.println("Directions: " + possibleDirections);
+                System.out.println("Keys" + keys);
+                System.out.println("highest should be: " + keys.get(2));
+                System.out.println("Moving to:" + rc.getLocation().directionTo(possibleDirections.get((keys.get(2)))));
+
+                if(rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(2)))))){
+                    rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(2)))));
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
     }
 
 }

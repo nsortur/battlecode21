@@ -3,8 +3,6 @@ package testBot1;
 import battlecode.common.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class Politician extends RobotPlayer {
 
@@ -21,21 +19,24 @@ public class Politician extends RobotPlayer {
             System.out.println("empowered");
             return;
         }
-        if (tryMove(randomDirection()))
-            System.out.println("I moved!");
-            */
-        List bots = Arrays.asList(rc.senseNearbyRobots(4, rc.getTeam().opponent())); // convert to arraylist for easier use
-        ArrayList<RobotType> types = new ArrayList<RobotType>();
-        // turn the list into the types of the robots
-
+        */
+        ArrayList<RobotType> types = new ArrayList<>();
+        RobotInfo[] robots = rc.senseNearbyRobots();
+        for (RobotInfo robot : robots) {
+            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && robot.team == enemy) {
+               types.add(robot.type);
+            }
+        }
+        System.out.println(types.toString());
         if(types.contains(RobotType.ENLIGHTENMENT_CENTER)){
             System.out.println("Contains");
-            if (rc.canEmpower(6)){
-                rc.empower(6);
+            if (rc.canEmpower(4)){
+                rc.empower(4);
             }
 
         }
-        Util.optimalGo(new MapLocation(10026, 23948));
+
+        Util.greedyPath(new MapLocation(10026, 23926));
 
     }
 }

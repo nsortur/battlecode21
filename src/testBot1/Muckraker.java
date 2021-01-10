@@ -1,6 +1,9 @@
 package testBot1;
 
-import battlecode.common.*;
+import battlecode.common.Direction;
+import battlecode.common.GameActionException;
+import battlecode.common.RobotInfo;
+import battlecode.common.RobotType;
 
 public class Muckraker extends RobotPlayer {
     // our enlightenment center's ID (one muckraker spawned from)
@@ -36,7 +39,7 @@ public class Muckraker extends RobotPlayer {
         killSlanderer();
         if (isCloseToEC() || Util.isNextToEdge()) {
             // do code once at edge/found EC
-            System.out.println("Done with scout behavior");
+            //System.out.println("Done with scout behavior");
         } else {
             Util.tryMove(scoutDir);
             // Util.moveNaive(new MapLocation(10026, 23926));
