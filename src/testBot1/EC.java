@@ -81,8 +81,8 @@ public class EC extends RobotPlayer {
 
             // make sure it's in range and a flag exists
             if (curFlag != -1 && curFlag != -2) {
-                int[] curLocation = Util.decryptOffsets(curFlag);
-                scoutLocations.put(id, curLocation);
+                int[] flagInfo = Util.decryptOffsets(curFlag);
+                scoutLocations.put(id, flagInfo);
             }
         }
     }

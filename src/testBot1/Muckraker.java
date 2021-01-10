@@ -28,7 +28,7 @@ public class Muckraker extends RobotPlayer {
             homeECLoc = rc.getLocation().subtract(scoutDir);
         }
         tryKillSlanderer();
-        if (isCloseToEC() || isNextToEdge()) {
+        if (isCloseToEnemyEC() || isNextToEdge()) {
             // do code once at edge/found EC
             System.out.println("Done with scout behavior");
         } else {
@@ -75,12 +75,41 @@ public class Muckraker extends RobotPlayer {
      * @return true if the robot is close to an ec
      * @throws GameActionException
      */
-    static boolean isCloseToEC() throws GameActionException {
+    static boolean isCloseToEnemyEC() throws GameActionException {
         RobotInfo[] robots = rc.senseNearbyRobots();
         for (RobotInfo robot : robots) {
-            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && robot.team != rc.getTeam()) {
+            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && robot.team == rc.getTeam().opponent()) {
+                MapLocation ecLoc = robot.location;
+                enemyECLocs.add(ecLoc);
+
                 // divide by 100 is temporary secret code, make more complex later
-                rc.setFlag(Util.concatInts(robot.getLocation().x, robot.getLocation().y) / 100);
+                int x_offset = ecLoc.x - homeECLoc.x;
+                int y_offset = ecLoc.y - homeECLoc.y;
+
+                if (Util.trySetFlag(Util.encryptOffsets(x_offset, y_offset, 1))) System.out.println("Flag set!");
+
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks to see if a robot is close to a neutral EC, and if it is sets the robot's flag
+     *
+     * @return true if the robot is close to an ec
+     * @throws GameActionException
+     */
+    static boolean isCloseToNeutralEC() throws GameActionException {
+        RobotInfo[] robots = rc.senseNearbyRobots();
+        for (RobotInfo robot : robots) {
+            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && robot.team == Team.NEUTRAL) {
+                // divide by 100 is temporary secret code, make more complex later
+                int x_offset = rc.getLocation().x - homeECLoc.x;
+                int y_offset = rc.getLocation().y - homeECLoc.y;
+
+                if (Util.trySetFlag(Util.encryptOffsets(x_offset, y_offset, 2))) System.out.println("Flag set!");
+
                 return true;
             }
         }
@@ -123,7 +152,7 @@ public class Muckraker extends RobotPlayer {
                 int x_offset = rc.getLocation().x - homeECLoc.x;
                 int y_offset = rc.getLocation().y - homeECLoc.y;
 
-                if (Util.trySetFlag(Util.encryptOffsets(x_offset, y_offset))) System.out.println("Flag set!");
+                if (Util.trySetFlag(Util.encryptOffsets(x_offset, y_offset, 0))) System.out.println("Flag set!");
                 break;
             }
         }

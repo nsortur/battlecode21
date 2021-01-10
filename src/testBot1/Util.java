@@ -2,6 +2,7 @@ package testBot1;
 
 import battlecode.common.*;
 
+
 public class Util extends RobotPlayer {
     /**
      * Spawns a bot for an enlightenment center
@@ -133,14 +134,15 @@ public class Util extends RobotPlayer {
     /**
      * Gets map coordinates from a flag value
      *
-     * @return coordinates of edge
+     * @return coordinates of edge and type of flag corresponding to dictionary in doc
      */
     static int[] decryptOffsets(int flagVal) {
-        int[] decrypted = new int[2];
+        int[] decrypted = new int[3];
         int x_sign = subInt(flagVal, 0, 1);
         int y_sign = subInt(flagVal, 3, 4);
         int flag_x = subInt(flagVal, 1, 3) - 10;
         int flag_y = subInt(flagVal, 4, 6) - 10;
+        int dictVal = subInt(flagVal, 6, 7);
 
         // make them negative if necessary
         if (x_sign == 2) flag_x = flag_x - (2 * flag_x);
@@ -148,6 +150,7 @@ public class Util extends RobotPlayer {
 
         decrypted[0] = flag_x;
         decrypted[1] = flag_y;
+        decrypted[2] = dictVal;
 
         return decrypted;
     }
@@ -157,9 +160,10 @@ public class Util extends RobotPlayer {
      *
      * @param xOffset the x offset
      * @param yOffset the y offset
+     * @param dictVal the meaning of the flag corresponding to dictionary in doc
      * @return the encrypted flag value
      */
-    static int encryptOffsets(int xOffset, int yOffset) {
+    static int encryptOffsets(int xOffset, int yOffset, int dictVal) {
         int flagX;
         int flagY;
         int xOffsetNew = Math.abs(xOffset) + 10;
@@ -178,7 +182,7 @@ public class Util extends RobotPlayer {
             flagY = concatInts(1, yOffsetNew);
         }
 
-        return concatInts(flagX, flagY);
+        return concatInts(concatInts(flagX, flagY), dictVal);
     }
 
     /**
