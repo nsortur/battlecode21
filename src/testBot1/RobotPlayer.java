@@ -38,8 +38,6 @@ public strictfp class RobotPlayer {
     static ArrayList<MapLocation> enemyECLocs = new ArrayList<>();
 
     // do we need the location of our own EC's?
-
-    static ArrayList<MapLocation> enemyEC = new ArrayList<>(); // total number of potential enemy ec's
     static int[] flagEC; // the integer value of the EC's flag
 
     /**
