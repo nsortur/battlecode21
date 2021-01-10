@@ -24,7 +24,7 @@ public class EC extends RobotPlayer {
             if (scoutID != -1) scoutIDs.add(scoutID);
 
         }
-        Util.spawnBot(RobotType.POLITICIAN, Direction.EAST, 200);
+        Util.spawnBot(RobotType.POLITICIAN, Direction.EAST, 150);
 
     }
 
