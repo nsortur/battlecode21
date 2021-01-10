@@ -3,7 +3,6 @@ import battlecode.common.*;
 
 import java.util.ArrayList;
 
-
 public strictfp class RobotPlayer {
     static RobotController rc;
 
@@ -24,17 +23,24 @@ public strictfp class RobotPlayer {
             Direction.NORTHWEST,
     };
 
+    static final Direction[] cardDirections = {
+            Direction.NORTH,
+            Direction.SOUTH,
+            Direction.EAST,
+            Direction.WEST,
+    };
+
     static int turnCount;
     static int numMuckrakers = 0;
     static int numSlanderers = 0;
     static int numPoliticians = 0;
     static int numEnlightenmentCenters; // figure out how to calculate this value (kind of did)
+    static ArrayList<MapLocation> enemyECLocs = new ArrayList<>();
 
     // do we need the location of our own EC's?
 
     static ArrayList<MapLocation> enemyEC = new ArrayList<>(); // total number of potential enemy ec's
     static int[] flagEC; // the integer value of the EC's flag
-
 
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
@@ -45,6 +51,7 @@ public strictfp class RobotPlayer {
         // This is the RobotController object. You use it to perform actions from this robot,
         // and to get information on its current status.
         RobotPlayer.rc = rc;
+        System.out.println(turnCount);
 
         turnCount = 0;
 
