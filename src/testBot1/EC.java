@@ -16,7 +16,7 @@ public class EC extends RobotPlayer {
             Util.getNumEC();
         }
 
-        if (numEnlightenmentCenters == enemyEC.size()) {
+        if (numEnlightenmentCenters == enemyECLocs.size()) {
             // once we have found all EC's
         } else {
             int scoutID = spawnScout();

@@ -27,7 +27,7 @@ public class Politician extends RobotPlayer {
                types.add(robot.type);
             }
         }
-        System.out.println(types.toString());
+        System.out.println("Types: " + types.toString());
         if(types.contains(RobotType.ENLIGHTENMENT_CENTER)){
             System.out.println("Contains");
             if (rc.canEmpower(4)){
@@ -36,7 +36,7 @@ public class Politician extends RobotPlayer {
 
         }
 
-        Util.greedyPath(new MapLocation(10026, 23926));
+        Util.greedyPath(new MapLocation(25064, 12919));
 
     }
 }
