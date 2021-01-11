@@ -8,6 +8,8 @@ import java.util.LinkedHashMap;
 public class EC extends RobotPlayer {
 
     static boolean[] scoutsSpawned = new boolean[8];
+
+    static boolean spawningDefense = false;
     static boolean attackerSpawned;
     static boolean attackingEC;
     static int startTurn;
@@ -18,6 +20,7 @@ public class EC extends RobotPlayer {
     static LinkedHashMap<Integer, int[]> scoutLocations = new LinkedHashMap<>();
 
     static void run() throws GameActionException {
+
         if (numEnlightenmentCenters == 0) {
             Util.getNumEC();
         }
@@ -34,6 +37,8 @@ public class EC extends RobotPlayer {
         }
         if (attackingEC) {
             spawnAttackPols();
+        } else if (rc.getRoundNum() % 30 == 0){ // how often
+                Util.spawnBot(RobotType.POLITICIAN, Direction.NORTH, (int) (rc.getInfluence() * .1));
         }
     }
 
@@ -118,13 +123,14 @@ public class EC extends RobotPlayer {
      * @throws GameActionException
      */
     static void spawnAttackPols() throws GameActionException{
-        double propToGive = 0.9;
+        double propToGive = 1;
         int inflToGive = (int) Math.round(propToGive * rc.getInfluence());
         attackTurns += 1;
         // interval to spawn pols until EC dies
-        int roundInterval = 25;
+        int roundInterval = 100;
 
-        if (!attackerSpawned || attackTurns > startTurn + roundInterval) {
+        if (rc.getRoundNum() < 250 && rc.getRoundNum() % 25 == 0) {
+            // old if: !attackerSpawned || attackTurns > startTurn + roundInterval
             int flagToShow = Util.encryptOffsets(attackInfo[0], attackInfo[1], 5);
             if (Util.trySetFlag(flagToShow)) {
                 // make spawn bot return ID in the future
