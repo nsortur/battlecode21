@@ -23,6 +23,9 @@ public class EC extends RobotPlayer {
     static LinkedHashMap<Integer, int[]> scoutLocations = new LinkedHashMap<>();
 
     static void run() throws GameActionException {
+        if (rc.getRoundNum() > 500){
+            rc.bid((int) (0.1 * rc.getInfluence()));
+        }
 
         if (numEnlightenmentCenters == 0) {
             Util.getNumEC();
