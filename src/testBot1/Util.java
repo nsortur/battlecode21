@@ -306,4 +306,15 @@ public class Util extends RobotPlayer {
         }
 
     }
+
+    /**
+     * Gets absolute location from a decrypted flag
+     * Only works for EC
+     *
+     * @param decrypted the decrypted flag value
+     * @return the absolute map location
+     */
+    static MapLocation getLocFromDecrypt(int[] decrypted, MapLocation curLoc) {
+        return new MapLocation(curLoc.x + decrypted[0], curLoc.y + decrypted[1]);
+    }
 }
