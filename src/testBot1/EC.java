@@ -10,6 +10,8 @@ public class EC extends RobotPlayer {
     static boolean[] scoutsSpawned = new boolean[8];
     static boolean attackerSpawned;
     static boolean attackingEC;
+    static int startTurn;
+    static int attackTurns = 0;
 
     // key: scout IDs, value: their location
     // in order of clockwise direction starting at north, use iterator if you need direction
@@ -98,6 +100,8 @@ public class EC extends RobotPlayer {
                 case 1: // attack ec using flaginfo
                     attackingEC = true;
                     attackInfo = flagInfo;
+                    startTurn = turnCount;
+                    attackTurns = startTurn;
                     System.out.println("Starting to attack");
                     break;
                 case 2: break; // capture neutral ec using flaginfo
@@ -116,8 +120,11 @@ public class EC extends RobotPlayer {
     static void spawnAttackPols() throws GameActionException{
         double propToGive = 0.9;
         int inflToGive = (int) Math.round(propToGive * rc.getInfluence());
+        attackTurns += 1;
+        // interval to spawn pols until EC dies
+        int roundInterval = 25;
 
-        if (!attackerSpawned) {
+        if (!attackerSpawned || attackTurns > startTurn + roundInterval) {
             int flagToShow = Util.encryptOffsets(attackInfo[0], attackInfo[1], 5);
             if (Util.trySetFlag(flagToShow)) {
                 // make spawn bot return ID in the future

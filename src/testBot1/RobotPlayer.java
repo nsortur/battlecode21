@@ -35,9 +35,6 @@ public strictfp class RobotPlayer {
     };
 
     static int turnCount;
-    static int numMuckrakers = 0;
-    static int numSlanderers = 0;
-    static int numPoliticians = 0;
     static int numEnlightenmentCenters; // figure out how to calculate this value (kind of did)
     static ArrayList<MapLocation> enemyECLocs = new ArrayList<>();
 

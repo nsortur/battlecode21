@@ -14,6 +14,7 @@ public class Politician extends RobotPlayer {
     static final Team enemy = rc.getTeam().opponent();
     static final int actionRadius = rc.getType().actionRadiusSquared;
     static MapLocation targetECLoc;
+    static int roundStart;
 
     static void run() throws GameActionException {
         if (ecID == 0) {
@@ -31,23 +32,17 @@ public class Politician extends RobotPlayer {
                 }
             }
         }
+
+        int roundToAttack = 300;
         if (attackingEC) {
-            attackEnemyEC();
+            if (rc.getRoundNum() > roundToAttack){
+                attackEnemyEC();
+            } else defend();
         }
 
     }
 
     static void attackEnemyEC() throws GameActionException{
-
-        /**
-         * get location from ec arraylist
-         * calculate conviction to give (40% of EC conviction each for two politicians, 1% for a muckraker)
-         * destroyedEC stop attacking if it's destroyed
-         * if !destroyedEC, greedyMove to EC location while searching to empower if enlightenment center is seen
-         *      if rounds have been more than 50, spawn another army and send
-         * if destroyedEC, break and set attacking to false
-         */
-
         Util.greedyPath(targetECLoc);
         // attack and raised killed flag if about to kill
         RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
@@ -63,6 +58,19 @@ public class Politician extends RobotPlayer {
             }
         }
 
+    }
+    static int roundsMoving = roundStart;
+
+    public static void defend() throws GameActionException {
+
+        Direction direction = directions[(int) (Math.random() * directions.length)];
+        if(rc.getLocation().add(direction).isWithinDistanceSquared(ecLoc, 15)){
+            if(rc.canMove(direction)){
+                rc.move(direction);
+            }
+        }
+        // moves in random directions
+        roundsMoving++;
     }
 
 }
