@@ -16,7 +16,6 @@ public class EC extends RobotPlayer {
     static int attackTurns = 0;
 
     // check to see if early game scouts have spawned
-    static boolean earlyGameSlandererSpawned;
 
     // key: scout IDs, value: their location
     // in order of clockwise direction starting at north, use iterator if you need direction
@@ -34,7 +33,9 @@ public class EC extends RobotPlayer {
 
         if (enemyECLocs.size() > 1) {
             // TODO spawn slanderers
-            spawnEarlyGameSlanderer();
+            if (rc.getRoundNum() % 20 == 0) {
+                spawnEarlyGameSlanderer();
+            }
         } else {
             int scoutID = spawnScout();
 
@@ -47,6 +48,10 @@ public class EC extends RobotPlayer {
             spawnAttackPols();
         } else if (rc.getRoundNum() % 30 == 0){ // how often
                 Util.spawnBot(RobotType.POLITICIAN, Direction.NORTH, (int) (rc.getInfluence() * .1));
+        }
+
+        if (rc.getRoundNum() % 40 == 0) {
+            Util.spawnBot(RobotType.MUCKRAKER, Direction.NORTH, 1);
         }
     }
 
@@ -83,18 +88,16 @@ public class EC extends RobotPlayer {
         // angle of 2 points, the value of a enemy EC and value of this ec
         // tell robot to go in opposite direction
         //
-        double propToGive = 0.5;
+        double propToGive = 0.2;
         int inflToGive = (int) Math.round(propToGive * rc.getInfluence());
 
-        if (!earlyGameSlandererSpawned) {
-            int[] offsets = Util.getOffsetFromEncrypt(rc.getLocation(), getNewLocation());
-            int flagToShow = Util.encryptOffsets(offsets[0], offsets[1], 6);
-            if (Util.trySetFlag(flagToShow)) {
-                // make spawn bot return ID in the future
-                Util.spawnBot(RobotType.SLANDERER, Direction.NORTH, inflToGive);
+        int[] offsets = Util.getOffsetFromEncrypt(rc.getLocation(), getNewLocation());
+        int flagToShow = Util.encryptOffsets(offsets[0], offsets[1], 6);
+        if (Util.trySetFlag(flagToShow)) {
+            // make spawn bot return ID in the future
+            Util.spawnBot(RobotType.SLANDERER, Direction.NORTH, inflToGive);
 
-                earlyGameSlandererSpawned = true;
-            }
+
         }
     }
 

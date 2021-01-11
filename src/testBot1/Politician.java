@@ -18,7 +18,22 @@ public class Politician extends RobotPlayer {
     static int roundsMoving = 0;
     static void run() throws GameActionException {
         if (ecID == 0) {
-            ecID = Util.getECID();
+            try {
+                ecID = Util.getECID();
+            } catch(Exception e) {
+                Team enemy = rc.getTeam().opponent();
+                int actionRadius = rc.getType().actionRadiusSquared;
+                RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
+                if (attackable.length != 0 && rc.canEmpower(actionRadius)) {
+                    //System.out.println("empowering...");
+                    rc.empower(actionRadius);
+                    //System.out.println("empowered");
+                    return;
+                }
+                if (Util.tryMove(Util.randomDirection())) {
+                    //System.out.println("I moved!");
+                }
+            }
         } else {
             // once we have the home EC's ID
             if (targetECLoc == null) {
