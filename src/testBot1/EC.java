@@ -2,12 +2,14 @@ package testBot1;
 
 import battlecode.common.*;
 
-import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 
 public class EC extends RobotPlayer {
 
     static boolean[] scoutsSpawned = new boolean[8];
+    static boolean attackerSpawned;
+    static boolean attackingEC;
 
     // key: scout IDs, value: their location
     // in order of clockwise direction starting at north, use iterator if you need direction
@@ -28,7 +30,9 @@ public class EC extends RobotPlayer {
             updateScoutLocs();
 
         }
-        Util.spawnBot(RobotType.POLITICIAN, Direction.EAST, 150);
+        if (attackingEC) {
+            spawnAttackPols();
+        }
     }
 
     /**
@@ -79,20 +83,71 @@ public class EC extends RobotPlayer {
      * @throws GameActionException
      */
     static void updateScoutLocs() throws GameActionException{
-        // loop through spawned scouts and update hashmap with location if possible
-        int[] flagInfo;
         for (int id : scoutLocations.keySet()) {
             int curFlag = Util.tryGetFlag(id);
 
             // make sure it's in range and a flag exists
             if (curFlag != -1 && curFlag != -2) {
-                flagInfo = Util.decryptOffsets(curFlag);
+                int[] flagInfo = Util.decryptOffsets(curFlag);
                 // uses ~1200 bytecode to put and ~1250 to get
-                // scoutLocations.put(id, flagInfo);
+                scoutLocations.put(id, flagInfo);
             }
+        }
+        checkFlags();
+    }
 
+    /**
+     * Checks flags in the hashmap and runs corresponding functionality
+     */
+    static void checkFlags() {
+        for (int[] flagInfo : scoutLocations.values()) {
 
+            switch (flagInfo[2]) {
+                case 0: break; // function for edge
+                case 1: // attack ec using flaginfo
+                    attackingEC = true;
+                    System.out.println("Starting to attack");
+                    break;
+                case 2: break; // capture neutral ec using flaginfo
+            }
+        }
+    }
 
+    /**
+     * Gets absolute location from a decrypted flag
+     * Only works for EC
+     *
+     * @param decrypted the decrypted flag value
+     * @return the absolute map location
+     */
+    static MapLocation getLocFromDecrypt(int[] decrypted) {
+        MapLocation curLoc = rc.getLocation();
+        return new MapLocation(curLoc.x + decrypted[0], curLoc.y + decrypted[1]);
+    }
+
+    /**
+     * Spawns attacking politician
+     *
+     * @throws GameActionException
+     */
+    static void spawnAttackPols() throws GameActionException{
+        double propToGive = 0.9;
+        int inflToGive = (int) Math.round(propToGive * rc.getInfluence());
+        int polID = -1;
+
+        if (!attackerSpawned && Util.trySetFlag(24)) {
+            // make spawn bot return ID in the future
+            Util.spawnBot(RobotType.POLITICIAN, Direction.NORTH, inflToGive);
+
+            // get politician's ID
+            MapLocation polLoc = rc.adjacentLocation(Direction.NORTH);
+            polID = rc.senseRobotAtLocation(polLoc).ID;
+            attackerSpawned = true;
+        }
+
+        if (Util.tryGetFlag(polID) == 25) {
+            attackingEC = false;
+            System.out.println("No longer attacking");
         }
     }
 }
