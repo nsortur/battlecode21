@@ -1,6 +1,8 @@
 package testBot1;
 
 import battlecode.common.*;
+
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 
 public class EC extends RobotPlayer {
@@ -16,7 +18,7 @@ public class EC extends RobotPlayer {
             Util.getNumEC();
         }
 
-        if (numEnlightenmentCenters == enemyEC.size()) {
+        if (numEnlightenmentCenters == enemyECLocs.size()) {
             // once we have found all EC's
         } else {
             int scoutID = spawnScout();
@@ -24,6 +26,7 @@ public class EC extends RobotPlayer {
             // add scout to linked hashmap if it's spawned
             if (scoutID != -1) scoutLocations.put(scoutID, null);
             updateScoutLocs();
+
         }
     }
 
@@ -76,14 +79,19 @@ public class EC extends RobotPlayer {
      */
     static void updateScoutLocs() throws GameActionException{
         // loop through spawned scouts and update hashmap with location if possible
+        int[] flagInfo;
         for (int id : scoutLocations.keySet()) {
             int curFlag = Util.tryGetFlag(id);
 
             // make sure it's in range and a flag exists
             if (curFlag != -1 && curFlag != -2) {
-                int[] flagInfo = Util.decryptOffsets(curFlag);
-                scoutLocations.put(id, flagInfo);
+                flagInfo = Util.decryptOffsets(curFlag);
+                // uses ~1200 bytecode to put and ~1250 to get
+                // scoutLocations.put(id, flagInfo);
             }
+
+
+
         }
     }
 }
