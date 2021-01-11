@@ -13,17 +13,12 @@ public class EC extends RobotPlayer {
 
     static void run() throws GameActionException {
 
+            if (rc.getRoundNum() % 5 == 0 && rc.getRoundNum() % 3 == 0){ // how often
+                Util.spawnBot(RobotType.POLITICIAN, Direction.EAST, rc.getInfluence());
+            }
 
-        if (rc.getRoundNum() < 200)
-            spawningDefense = true;
-
-
-        if (spawningDefense && rc.getInfluence() >= 50) {
-           // Direction direction = directions[(int) (Math.random() * directions.length)];
-            Util.spawnBot(RobotType.POLITICIAN, Direction.EAST, 50);
         }
        // Util.spawnBot(RobotType.POLITICIAN, Direction.EAST, 150);
-    }
 
     /**
      * Spawns 8 scouts in different directions

@@ -2,43 +2,45 @@ package testBot1;
 
 import battlecode.common.*;
 
-import java.util.ArrayList;
-
 public class Politician extends RobotPlayer {
 
     static MapLocation ECLocation = rc.adjacentLocation(Direction.WEST);
-    static int count = 0;
+    static int roundsMoving = 0;
     static void run() throws GameActionException {
-        Team enemy = rc.getTeam().opponent();
-        int actionRadius = rc.getType().actionRadiusSquared;
-        int convic = rc.getConviction();
-
-
-        if (count < 30){
-            RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
-            RobotInfo[] robots = rc.senseNearbyRobots();
-            for (RobotInfo robot : robots) {
-                if (attackable.length > 0 && robot.team == enemy) {
-                    if (rc.canEmpower(actionRadius)){
-                        rc.empower(actionRadius);
-                    }
-                }
-            }
-
+        if (rc.getRoundNum() < 1000){ // defend for 1000 rounds
+            defend();
+        }
+        else{
             Direction direction = directions[(int) (Math.random() * directions.length)];
-            if(rc.getLocation().add(direction).isWithinDistanceSquared(ECLocation, 15)){
                 if(rc.canMove(direction)){
-                    count++;
                     rc.move(direction);
                 }
             }
+    }
 
+
+    public static void defend() throws GameActionException {
+        //constantly checks if theres an enemy bot
+        Team enemy = rc.getTeam().opponent();
+        int actionRadius = rc.getType().actionRadiusSquared;
+        RobotInfo[] robots = rc.senseNearbyRobots(actionRadius);
+        for (RobotInfo robot : robots) {
+            if (robot.team == enemy) {
+                if (rc.canEmpower(actionRadius)){
+                    rc.empower(actionRadius);
+                }
+            }
         }
-        else{
 
-            Util.greedyPath(new MapLocation(25064, 12919));
+        Direction direction = directions[(int) (Math.random() * directions.length)];
+        if(rc.getLocation().add(direction).isWithinDistanceSquared(ECLocation, 15)){
+            if(rc.canMove(direction)){
+                rc.move(direction);
+            }
         }
+        // moves in random directions
 
 
+        roundsMoving++;
     }
 }
