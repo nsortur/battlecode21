@@ -2,6 +2,8 @@ package testBot1;
 import battlecode.common.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public strictfp class RobotPlayer {
     static RobotController rc;
@@ -23,6 +25,8 @@ public strictfp class RobotPlayer {
             Direction.NORTHWEST,
     };
 
+    static List<Direction> directionsList = Arrays.asList(directions);
+
     static final Direction[] cardDirections = {
             Direction.NORTH,
             Direction.SOUTH,
@@ -38,6 +42,7 @@ public strictfp class RobotPlayer {
     static ArrayList<MapLocation> enemyECLocs = new ArrayList<>();
 
     // do we need the location of our own EC's?
+
     static int[] flagEC; // the integer value of the EC's flag
 
     /**

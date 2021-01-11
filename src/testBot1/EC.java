@@ -28,6 +28,7 @@ public class EC extends RobotPlayer {
             updateScoutLocs();
 
         }
+        Util.spawnBot(RobotType.POLITICIAN, Direction.EAST, 150);
     }
 
     /**
