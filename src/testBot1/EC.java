@@ -11,17 +11,23 @@ public class EC extends RobotPlayer {
     static boolean attackerSpawned;
     static boolean attackingEC;
 
+    // check to see if early game scouts have spawned
+    static boolean earlyGameSlandererSpawned;
+
     // key: scout IDs, value: their location
     // in order of clockwise direction starting at north, use iterator if you need direction
     static LinkedHashMap<Integer, int[]> scoutLocations = new LinkedHashMap<>();
 
     static void run() throws GameActionException {
+        System.out.println(numEnlightenmentCenters);
         if (numEnlightenmentCenters == 0) {
             Util.getNumEC();
+            Clock.yield();
         }
 
-        if (numEnlightenmentCenters == enemyECLocs.size()) {
-            // once we have found all EC's
+        if (enemyECLocs.size() > 1) {
+            // TODO spawn slanderers
+            spawnEarlyGameSlanderer();
         } else {
             int scoutID = spawnScout();
 
@@ -55,6 +61,55 @@ public class EC extends RobotPlayer {
         }
         return -1;
     }
+
+    /**
+     * Spawns the early game slanderers
+     *
+     * @throws GameActionException
+     */
+    static void spawnEarlyGameSlanderer() throws GameActionException {
+        // Spawn the slanderers
+        // set a flag to a location
+        // calculate location using average of this value
+        // angle of 2 points, the value of a enemy EC and value of this ec
+        // tell robot to go in opposite direction
+        //
+        double propToGive = 0.5;
+        int inflToGive = (int) Math.round(propToGive * rc.getInfluence());
+
+        if (!earlyGameSlandererSpawned) {
+            int[] offsets = Util.getOffsetFromEncrypt(rc.getLocation(), getNewLocation());
+            int flagToShow = Util.encryptOffsets(offsets[0], offsets[1], 6);
+            if (Util.trySetFlag(flagToShow)) {
+                // make spawn bot return ID in the future
+                Util.spawnBot(RobotType.SLANDERER, Direction.NORTH, inflToGive);
+
+                earlyGameSlandererSpawned = true;
+            }
+        }
+    }
+
+    static MapLocation getNewLocation() throws GameActionException {
+        int[] offsets = new int[2];
+        int angleIndexSum = 0;
+        int distanceSum = 0;
+        for (MapLocation enemyEC : enemyECLocs) {
+            Direction dir = rc.getLocation().directionTo(enemyEC);
+            angleIndexSum += directionsList.indexOf(dir);
+            distanceSum += rc.getLocation().distanceSquaredTo(enemyEC);
+        }
+        int averageIndex = angleIndexSum / enemyECLocs.size();
+        Direction direction = directions[Math.abs(averageIndex-4)];
+        int averageDistance = distanceSum / enemyECLocs.size();
+        int i = 0;
+        MapLocation newLocation = rc.getLocation();
+        while (i < Math.sqrt(averageDistance / 3)) {
+            newLocation = newLocation.add(direction);
+            i+=1;
+        }
+        return newLocation;
+    }
+
 
     /**
      * Sets the EC's flag when creating a scout
@@ -98,6 +153,7 @@ public class EC extends RobotPlayer {
                 case 1: // attack ec using flaginfo
                     attackingEC = true;
                     attackInfo = flagInfo;
+                    enemyECLocs.add(Util.getLocFromDecrypt(flagInfo, rc.getLocation()));
                     System.out.println("Starting to attack");
                     break;
                 case 2: break; // capture neutral ec using flaginfo
@@ -135,4 +191,5 @@ public class EC extends RobotPlayer {
             System.out.println("No longer attacking");
         }
     }
+
 }

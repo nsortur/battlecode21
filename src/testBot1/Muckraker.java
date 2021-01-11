@@ -30,7 +30,7 @@ public class Muckraker extends RobotPlayer {
         tryKillSlanderer();
         if (isCloseToEnemyEC() || isCloseToNeutralEC() || isNextToEdge()) {
             // do code once at edge/found EC
-            System.out.println("Done with scout behavior");
+            // System.out.println("Done with scout behavior");
         } else {
             Util.tryMove(scoutDir);
             // Util.moveNaive(new MapLocation(10026, 23926));
@@ -85,7 +85,7 @@ public class Muckraker extends RobotPlayer {
                 int x_offset = ecLoc.x - homeECLoc.x;
                 int y_offset = ecLoc.y - homeECLoc.y;
 
-                if (Util.trySetFlag(Util.encryptOffsets(x_offset, y_offset, 1))) System.out.println("Flag set!");
+                if (Util.trySetFlag(Util.encryptOffsets(x_offset, y_offset, 1))) // System.out.println("Flag set!");
 
                 return true;
             }
@@ -108,7 +108,7 @@ public class Muckraker extends RobotPlayer {
                 int x_offset = ecLoc.x - homeECLoc.x;
                 int y_offset = ecLoc.y - homeECLoc.y;
 
-                if (Util.trySetFlag(Util.encryptOffsets(x_offset, y_offset, 2))) System.out.println("Flag set!");
+                if (Util.trySetFlag(Util.encryptOffsets(x_offset, y_offset, 2))) // System.out.println("Flag set!");
 
                 return true;
             }
@@ -153,7 +153,7 @@ public class Muckraker extends RobotPlayer {
                 int x_offset = rc.getLocation().x - homeECLoc.x;
                 int y_offset = rc.getLocation().y - homeECLoc.y;
 
-                if (Util.trySetFlag(Util.encryptOffsets(x_offset, y_offset, 0))) System.out.println("Flag set!");
+                if (Util.trySetFlag(Util.encryptOffsets(x_offset, y_offset, 0))) // System.out.println("Flag set!");
                 break;
             }
         }
