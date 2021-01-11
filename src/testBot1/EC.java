@@ -1,31 +1,31 @@
 package testBot1;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotType;
-
-import java.util.ArrayList;
+import battlecode.common.*;
+import java.util.LinkedHashMap;
 
 public class EC extends RobotPlayer {
 
-
     static boolean[] scoutsSpawned = new boolean[8];
-    static ArrayList<Integer> scoutIDs = new ArrayList<Integer>();
+
+    // key: scout IDs, value: their location
+    // in order of clockwise direction starting at north, use iterator if you need direction
+    static LinkedHashMap<Integer, int[]> scoutLocations = new LinkedHashMap<>();
 
     static void run() throws GameActionException {
         if (numEnlightenmentCenters == 0) {
             Util.getNumEC();
         }
+
         if (numEnlightenmentCenters == enemyEC.size()) {
             // once we have found all EC's
         } else {
             int scoutID = spawnScout();
-            if (scoutID != -1) scoutIDs.add(scoutID);
 
+            // add scout to linked hashmap if it's spawned
+            if (scoutID != -1) scoutLocations.put(scoutID, null);
+            updateScoutLocs();
         }
         Util.spawnBot(RobotType.POLITICIAN, Direction.EAST, 150);
-
     }
 
     /**
@@ -67,6 +67,24 @@ public class EC extends RobotPlayer {
             case NORTHWEST: Util.trySetFlag(18); break;
             default:
                 throw new IllegalStateException("Unexpected direction: " + dir);
+        }
+    }
+
+    /**
+     * Checks the field for all scouts' flags and updates their location in the hashmap
+     *
+     * @throws GameActionException
+     */
+    static void updateScoutLocs() throws GameActionException{
+        // loop through spawned scouts and update hashmap with location if possible
+        for (int id : scoutLocations.keySet()) {
+            int curFlag = Util.tryGetFlag(id);
+
+            // make sure it's in range and a flag exists
+            if (curFlag != -1 && curFlag != -2) {
+                int[] flagInfo = Util.decryptOffsets(curFlag);
+                scoutLocations.put(id, flagInfo);
+            }
         }
     }
 }

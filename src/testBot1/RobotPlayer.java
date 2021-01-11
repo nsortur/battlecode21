@@ -1,11 +1,9 @@
 package testBot1;
-
 import battlecode.common.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 
 public strictfp class RobotPlayer {
     static RobotController rc;
@@ -36,22 +34,17 @@ public strictfp class RobotPlayer {
             Direction.WEST,
     };
 
-    static ArrayList<Direction> constant= new ArrayList<Direction>();
-
     static int turnCount;
     static int numMuckrakers = 0;
     static int numSlanderers = 0;
     static int numPoliticians = 0;
     static int numEnlightenmentCenters; // figure out how to calculate this value (kind of did)
+    static ArrayList<MapLocation> enemyECLocs = new ArrayList<>();
 
     // do we need the location of our own EC's?
 
     static ArrayList<MapLocation> enemyEC = new ArrayList<>(); // total number of potential enemy ec's
     static int[] flagEC; // the integer value of the EC's flag
-
-    // secret area
-    // hit edge
-    static int edgeCode;
 
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
@@ -75,7 +68,7 @@ public strictfp class RobotPlayer {
                 // You may rewrite this into your own control structure if you wish.
                 // System.out.println("I'm a " + rc.getType() + "! Location " + rc.getLocation());
                 switch (rc.getType()) {
-                    case ENLIGHTENMENT_CENTER: EC.run();                  break;
+                    case ENLIGHTENMENT_CENTER: EC.run(); break;
                     case POLITICIAN:           Politician.run();          break;
                     case SLANDERER:            Slanderer.run();           break;
                     case MUCKRAKER:            Muckraker.run();           break;

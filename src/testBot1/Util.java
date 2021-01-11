@@ -1,15 +1,10 @@
 package testBot1;
 
 import battlecode.common.*;
-
 import java.util.*;
 
 
 public class Util extends RobotPlayer {
-
-
-
-
     /**
      * Spawns a bot for an enlightenment center
      *
@@ -20,9 +15,6 @@ public class Util extends RobotPlayer {
      * @return true if spawned
      * @throws GameActionException
      */
-
-
-
     static boolean spawnBot(RobotType type, Direction dir, int influence) throws GameActionException{
         if (!rc.getType().equals(RobotType.ENLIGHTENMENT_CENTER)){
             System.out.println("not EC, trying to spawn from " + rc.getType());
@@ -86,33 +78,10 @@ public class Util extends RobotPlayer {
         } else return false;
     }
 
-
-
-    static void getNumEC() throws GameActionException {
+    static void getNumEC() {
         numEnlightenmentCenters = 3;
         // check flag - if it says number of ec's return that
         // if it does not then equal it to robot count (since this needs to happen immediately)
-    }
-
-    /**
-     * Checks if a bot is next to an edge
-     *
-     * @return true if it's next to an edge
-     * @throws GameActionException
-     */
-    static boolean isNextToEdge() throws GameActionException{
-        boolean hitEdge = false;
-
-        for(Direction dir : cardDirections) {
-            MapLocation adjLoc = rc.adjacentLocation(dir);
-            hitEdge = !rc.onTheMap(adjLoc);
-            if (hitEdge) {
-                rc.setFlag(2); //some flag that tells we've hit an edge
-                break;
-            }
-        }
-
-        return hitEdge;
     }
 
     /**
@@ -131,13 +100,17 @@ public class Util extends RobotPlayer {
      * Gets a flag
      *
      * @param id of the robot
-     * @return the flag value
+     * @return the flag value, -2 if there is no set flag, -1 if flag value can't be read
      * @throws GameActionException
      */
     static int tryGetFlag(int id) throws GameActionException {
         if (rc.canGetFlag(id)) {
-            return rc.getFlag(id);
-        } else throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Cannot get flag");
+            id = rc.getFlag(id);
+            // make sure there is a flag set
+            if (id != 0) {
+                return id;
+            } else return -2;
+        } else return -1;
     }
 
     /**
@@ -156,79 +129,103 @@ public class Util extends RobotPlayer {
         throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "No enlightenment center");
     }
 
-
+    // preceding "1" bit means positive, "2" means negative
+    // valid coordinate codes can range from from 264264 (-64, -64) 100100 (0, 0) to 164164 (64, 64)
+    // add support for bit at end ranging from 0-9 to explain different flags
     /**
-     * Moves the robot from its current location to the target location
+     * Gets map coordinates from a flag value
      *
-     * @param the location of the target
-     * @throws GameActionException
+     * @return coordinates of edge and type of flag corresponding to dictionary in doc
      */
+    static int[] decryptOffsets(int flagVal) {
+        int[] decrypted = new int[3];
+        int x_sign = subInt(flagVal, 0, 1);
+        int y_sign = subInt(flagVal, 3, 4);
+        int flag_x = subInt(flagVal, 1, 3) - 10;
+        int flag_y = subInt(flagVal, 4, 6) - 10;
+        int dictVal = subInt(flagVal, 6, 7);
 
-    static double passabilityThreshold = 0.7;
-    static Direction bugDirection = null;
-    static ArrayList<Direction> visited = new ArrayList<Direction>();
-    // if you visit location twice then decrease threshold
+        // make them negative if necessary
+        if (x_sign == 2) flag_x = flag_x - (2 * flag_x);
+        if (y_sign == 2) flag_y = flag_y - (2 * flag_y);
 
-    static void goTo(MapLocation target) throws GameActionException {
-        Direction d = rc.getLocation().directionTo(target);
-        if (rc.getLocation().equals(target)){
-            visited.clear();
-            return; // we have arrived at location
-        }
+        decrypted[0] = flag_x;
+        decrypted[1] = flag_y;
+        decrypted[2] = dictVal;
 
-        else if (rc.isReady()){
-            if (rc.canMove(d) && rc.sensePassability(rc.getLocation().add(d)) >= passabilityThreshold){
-                rc.move(d);
-                bugDirection = null;
-            }
-            else{
-                if (bugDirection == null){
-                    bugDirection = d.rotateRight();
-                }
-                for (int i = 0; i < 8; ++i){
-                    if (rc.canMove(bugDirection) && rc.sensePassability(rc.getLocation().add(bugDirection)) >= passabilityThreshold){
-                        rc.move(bugDirection);
-                        break;
-                    }
-                    bugDirection = bugDirection.rotateLeft();
-                }
-                bugDirection = bugDirection.rotateRight();
-            }
-        }
+        return decrypted;
     }
 
     /**
-     * Moves the robot from its current location to the target location
+     * Encrypts x and y offsets into a flag value
      *
-     * @param  target's location
-     * @throws GameActionException
+     * @param xOffset the x offset
+     * @param yOffset the y offset
+     * @param dictVal the meaning of the flag corresponding to dictionary in doc
+     * @return the encrypted flag value
      */
+    static int encryptOffsets(int xOffset, int yOffset, int dictVal) {
+        int flagX;
+        int flagY;
+        int xOffsetNew = Math.abs(xOffset) + 10;
+        int yOffsetNew = Math.abs(yOffset) + 10;
 
-    static void go2(MapLocation target) throws GameActionException {
-        if (rc.getLocation().equals(target)){
-            return; // we have arrived at location
+        // set signs
+        if (xOffset < 0) {
+            flagX = concatInts(2, xOffsetNew);
+        } else {
+            flagX = concatInts(1, xOffsetNew);
         }
-        final Direction line = rc.getLocation().directionTo(target);
 
-        if (rc.isReady()){
-            if (rc.canMove(line) && rc.sensePassability(rc.getLocation().add(line)) >= passabilityThreshold){
-                rc.move(line);
-            }
-            else{
-                for (int i = 0; i < 8; i++) {
-                    if (rc.canMove(RobotPlayer.directions[i]) && rc.sensePassability(rc.getLocation().add(RobotPlayer.directions[i])) >= passabilityThreshold){
-                        rc.move(RobotPlayer.directions[i]);
-                        break;
-                    }
-                    else{
-                        passabilityThreshold -= .1;
-                    }
-
-                }
-            }
+        if (yOffset < 0) {
+            flagY = concatInts(2, yOffsetNew);
+        } else {
+            flagY = concatInts(1, yOffsetNew);
         }
+
+        return concatInts(concatInts(flagX, flagY), dictVal);
     }
 
+    /**
+     * Similar to "substring" but for an integer
+     *
+     * @param toSub integer to be broken up
+     * @param start starting indices
+     * @param end ending indices
+     * @return part of the integer
+     */
+    static int subInt(int toSub, int start, int end){
+        String strInt = Integer.toString(toSub);
+        String str = strInt.substring(start, end);
+        return Integer.parseInt(str);
+    }
+
+    /**
+     * Concatenates 2 integers to be 1 integer
+     *
+     * @param a integer
+     * @param b integer
+     * @return ab, concatenated integer
+     */
+    static int concatInts(int a, int b) {
+
+        // Convert both the integers to string
+        String s1 = Integer.toString(a);
+        String s2 = Integer.toString(b);
+
+        // Concatenate both strings
+        String s = s1 + s2;
+
+        // return the formed integer
+        return Integer.parseInt(s);
+    }
+
+    /**
+     * Uses the greedy algorithm to move to a location
+     *
+     * @param target location to go to
+     * @throws GameActionException
+     */
     static void greedyPath(MapLocation target) throws GameActionException{
         if (rc.getLocation().equals(target)){
             return; // we have arrived at location
@@ -261,5 +258,4 @@ public class Util extends RobotPlayer {
         }
 
     }
-
 }
