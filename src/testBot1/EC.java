@@ -16,7 +16,7 @@ public class EC extends RobotPlayer {
             Util.getNumEC();
         }
 
-        if (numEnlightenmentCenters == enemyEC.size()) {
+        if (numEnlightenmentCenters == enemyECLocs.size()) {
             // once we have found all EC's
         } else {
             int scoutID = spawnScout();
@@ -25,6 +25,7 @@ public class EC extends RobotPlayer {
             if (scoutID != -1) scoutLocations.put(scoutID, null);
             updateScoutLocs();
         }
+        Util.spawnBot(RobotType.POLITICIAN, Direction.EAST, 150);
     }
 
     /**

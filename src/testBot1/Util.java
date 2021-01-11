@@ -1,6 +1,7 @@
 package testBot1;
 
 import battlecode.common.*;
+import java.util.*;
 
 
 public class Util extends RobotPlayer {
@@ -219,4 +220,90 @@ public class Util extends RobotPlayer {
         return Integer.parseInt(s);
     }
 
+    /**
+     * Uses the greedy algorithm to move to a location
+     *
+     * @param target location to go to
+     * @throws GameActionException
+     */
+    static void greedyPath(MapLocation target) throws GameActionException{
+        if (rc.getLocation().equals(target)){
+            return; // we have arrived at location
+        }
+        Direction direction = rc.getLocation().directionTo(target);
+        try{
+            if (rc.isReady()){
+                Hashtable<Integer, Direction> areas = new Hashtable<>();
+                for (int i = 0; i < 3; i++) {
+                    areas.put(i, directionsList.get(Math.abs((directionsList.indexOf(direction) - 1 + i) % directionsList.size())));
+                }
+                HashMap<Double, MapLocation> possibleDirections = new HashMap<>();
+                for (int i = 0; i < 3; i++) {
+                    possibleDirections.put(rc.sensePassability(rc.getLocation().add(areas.get(i))), rc.getLocation().add(areas.get(i)));
+                }
+                List keys = new ArrayList(possibleDirections.keySet());
+                Collections.sort(keys);
+                System.out.println("DirectionsList: " + directionsList);
+                System.out.println("Areas:" + areas);
+                System.out.println("Directions: " + possibleDirections);
+                System.out.println("Keys" + keys);
+
+                try{
+                    if(rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(2)))))){
+                        System.out.println("Moving to:" + rc.getLocation().directionTo(possibleDirections.get((keys.get(2)))));
+                        rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(2)))));
+                    }
+                    else{
+                        if(rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))))){
+                            System.out.println("Moving to:" + rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))));
+                            rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))));
+                        }
+                        else{
+                            if(rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))))){
+                                System.out.println("Moving to:" + rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))));
+                                rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))));
+                            }
+                            else{
+                                for (Direction value : directionsList) {
+                                    if (rc.canMove(value)) {
+                                        System.out.println("Moving to:" + value);
+                                        rc.move(value);
+                                    }
+                                    System.out.println("Cant move to:" + value);
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception e){
+                    try{
+                        if(rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))))){
+                            System.out.println("Moving to:" + rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))));
+                            rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))));
+                        }
+                    }
+                    catch (Exception m){
+                        try{
+                            if(rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))))){
+                                System.out.println("Moving to:" + rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))));
+                                rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))));
+                            }
+                            else{ // if it is completely blocked off
+
+                            }
+                        }
+                        catch (Exception q){
+                            System.out.println("inner catch");
+                            System.out.println(q);
+                        }
+                    }
+                }
+            }
+            System.out.println("Is not ready");
+        } catch (Exception e) {
+            System.out.println("Outer catch");
+            System.out.println(e);
+        }
+
+    }
 }
