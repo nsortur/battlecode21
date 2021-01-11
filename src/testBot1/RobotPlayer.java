@@ -1,12 +1,15 @@
 package testBot1;
 import battlecode.common.*;
 
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public strictfp class RobotPlayer {
     static RobotController rc;
+
+    static List<Integer> robotIDs = new ArrayList<>();
 
     static final RobotType[] spawnableRobot = {
             RobotType.POLITICIAN,

@@ -6,26 +6,23 @@ import java.util.LinkedHashMap;
 public class EC extends RobotPlayer {
 
     static boolean[] scoutsSpawned = new boolean[8];
-
+    static boolean spawningDefense = false;
     // key: scout IDs, value: their location
     // in order of clockwise direction starting at north, use iterator if you need direction
     static LinkedHashMap<Integer, int[]> scoutLocations = new LinkedHashMap<>();
 
     static void run() throws GameActionException {
-        if (numEnlightenmentCenters == 0) {
-            Util.getNumEC();
-        }
 
-        if (numEnlightenmentCenters == enemyECLocs.size()) {
-            // once we have found all EC's
-        } else {
-            int scoutID = spawnScout();
 
-            // add scout to linked hashmap if it's spawned
-            if (scoutID != -1) scoutLocations.put(scoutID, null);
-            updateScoutLocs();
+        if (rc.getRoundNum() < 200)
+            spawningDefense = true;
+
+
+        if (spawningDefense && rc.getInfluence() >= 50) {
+           // Direction direction = directions[(int) (Math.random() * directions.length)];
+            Util.spawnBot(RobotType.POLITICIAN, Direction.EAST, 50);
         }
-        Util.spawnBot(RobotType.POLITICIAN, Direction.EAST, 150);
+       // Util.spawnBot(RobotType.POLITICIAN, Direction.EAST, 150);
     }
 
     /**
