@@ -3,44 +3,28 @@ package testBot1;
 import battlecode.common.*;
 
 public class Politician extends RobotPlayer {
+    
+    static final Team enemy = rc.getTeam().opponent();
+    static final int actionRadius = rc.getType().actionRadiusSquared;
 
-    static MapLocation ECLocation = rc.adjacentLocation(Direction.WEST);
-    static int roundsMoving = 0;
     static void run() throws GameActionException {
-        if (rc.getRoundNum() < 1000){ // defend for 1000 rounds
-            defend();
-        }
-        else{
-            Direction direction = directions[(int) (Math.random() * directions.length)];
-                if(rc.canMove(direction)){
-                    rc.move(direction);
-                }
-            }
+        
     }
-
 
     public static void defend() throws GameActionException {
         //constantly checks if theres an enemy bot
-        Team enemy = rc.getTeam().opponent();
-        int actionRadius = rc.getType().actionRadiusSquared;
-        RobotInfo[] robots = rc.senseNearbyRobots(actionRadius);
+        RobotInfo[] robots = rc.senseNearbyRobots(actionRadius, enemy);
         for (RobotInfo robot : robots) {
-            if (robot.team == enemy) {
-                if (rc.canEmpower(actionRadius)){
-                    rc.empower(actionRadius);
-                }
+            if (rc.canEmpower(actionRadius)){
+                rc.empower(actionRadius);
             }
         }
-
+        // moves in random directions
         Direction direction = directions[(int) (Math.random() * directions.length)];
-        if(rc.getLocation().add(direction).isWithinDistanceSquared(ECLocation, 15)){
+        if(rc.getLocation().add(direction).isWithinDistanceSquared(new MapLocation(0, 0), 15)){ // use friendly EC location instead
             if(rc.canMove(direction)){
                 rc.move(direction);
             }
         }
-        // moves in random directions
-
-
-        roundsMoving++;
     }
 }
