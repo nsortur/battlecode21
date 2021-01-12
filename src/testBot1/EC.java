@@ -13,12 +13,22 @@ public class EC extends RobotPlayer {
 
     static void run() throws GameActionException {
 
-            if (rc.getRoundNum() % 5 == 0 && rc.getRoundNum() % 3 == 0){ // how often
-                Util.spawnBot(RobotType.POLITICIAN, Direction.EAST, rc.getInfluence());
-            }
+        if (numEnlightenmentCenters == 0) {
+            Util.getNumEC();
+        }
+
+        if (numEnlightenmentCenters == enemyECLocs.size()) {
+            // once we have found all EC's
+        } else {
+            int scoutID = spawnScout();
+
+            // add scout to linked hashmap if it's spawned
+            if (scoutID != -1) scoutLocations.put(scoutID, null);
+            updateScoutLocs();
+        }
+        // Util.spawnBot(RobotType.POLITICIAN, Direction.EAST, 150);
 
         }
-       // Util.spawnBot(RobotType.POLITICIAN, Direction.EAST, 150);
 
     /**
      * Spawns 8 scouts in different directions
