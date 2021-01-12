@@ -10,6 +10,8 @@ public class EC extends RobotPlayer {
     static boolean[] scoutsSpawned = new boolean[8];
     static boolean attackerSpawned;
     static boolean attackingEC;
+    static int[] attackInfo;
+    static int polID = -1;
 
     // key: scout IDs, value: their location
     // in order of clockwise direction starting at north, use iterator if you need direction
@@ -19,7 +21,6 @@ public class EC extends RobotPlayer {
         if (numEnlightenmentCenters == 0) {
             Util.getNumEC();
         }
-
         if (numEnlightenmentCenters == enemyECLocs.size()) {
             // once we have found all EC's
         } else {
@@ -106,8 +107,6 @@ public class EC extends RobotPlayer {
         }
     }
 
-    static int[] attackInfo;
-    static int polID = -1;
     /**
      * Spawns attacking politician
      *

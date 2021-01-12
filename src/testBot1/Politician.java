@@ -38,7 +38,6 @@ public class Politician extends RobotPlayer {
     }
 
     static void attackEnemyEC() throws GameActionException{
-
         /**
          * get location from ec arraylist
          * calculate conviction to give (40% of EC conviction each for two politicians, 1% for a muckraker)
@@ -53,13 +52,15 @@ public class Politician extends RobotPlayer {
         RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
         for (RobotInfo robot : attackable) {
             if (robot.type == RobotType.ENLIGHTENMENT_CENTER && rc.canEmpower(actionRadius)) {
-                // TODO: check that EC influence is less than politician conviction
-                Util.trySetFlag(25);
+                int ECConvic = robot.getConviction();
+                if (rc.getConviction() > ECConvic) {
+                    Util.trySetFlag(25);
 
-                // wait for EC to read flag that politician is gonna die
-                Clock.yield();
-                attackingEC = false;
-                rc.empower(actionRadius);
+                    // wait for EC to read flag that politician is gonna die
+                    Clock.yield();
+                    attackingEC = false;
+                    rc.empower(actionRadius);
+                }
             }
         }
 
