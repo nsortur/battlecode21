@@ -6,7 +6,6 @@ import java.util.LinkedHashMap;
 public class EC extends RobotPlayer {
 
     static boolean[] scoutsSpawned = new boolean[8];
-    static boolean spawningDefense = false;
     // key: scout IDs, value: their location
     // in order of clockwise direction starting at north, use iterator if you need direction
     static LinkedHashMap<Integer, int[]> scoutLocations = new LinkedHashMap<>();
