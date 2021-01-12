@@ -32,7 +32,7 @@ public class EC extends RobotPlayer {
         // For rush strat:
         // Util.spawnBot(RobotType.POLITICIAN, Direction.EAST, 150);
         // if (attackingEC) {
-        //     spawnAttackPols();
+        //     spawnAttackPol();
         // }
     }
 
@@ -113,23 +113,25 @@ public class EC extends RobotPlayer {
      *
      * @throws GameActionException
      */
-    static void spawnAttackPols() throws GameActionException{
-        double propToGive = 0.9;
+    static void spawnAttackPol() throws GameActionException{
+        double propToGive = 0.9; 
         int inflToGive = (int) Math.round(propToGive * rc.getInfluence());
 
         if (!attackerSpawned) {
             int flagToShow = Util.encryptOffsets(attackInfo[0], attackInfo[1], 5);
             if (Util.trySetFlag(flagToShow)) {
                 // make spawn bot return ID in the future
+                // TODO: Don't spawn only North - figure it out 
                 Util.spawnBot(RobotType.POLITICIAN, Direction.NORTH, inflToGive);
-
+                // TODO: Make this an abstract function, with parameters of x-offset, y-offset, 
+                // decryption code and robot type, with a return value of the id of the created object
                 // get politician's ID
                 MapLocation polLoc = rc.adjacentLocation(Direction.NORTH);
                 polID = rc.senseRobotAtLocation(polLoc).ID;
                 attackerSpawned = true;
             }
         }
-
+        // TODO: Make new function 
         if (Util.tryGetFlag(polID) == 25) {
             attackingEC = false;
             System.out.println("No longer attacking");
