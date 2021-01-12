@@ -6,16 +6,20 @@ import java.util.LinkedHashMap;
 public class EC extends RobotPlayer {
 
     static boolean[] scoutsSpawned = new boolean[8];
+    static boolean attackerSpawned;
+    static boolean attackingEC;
+    static int[] attackInfo;
+    static int polID = -1;
 
     // key: scout IDs, value: their location
     // in order of clockwise direction starting at north, use iterator if you need direction
     static LinkedHashMap<Integer, int[]> scoutLocations = new LinkedHashMap<>();
 
     static void run() throws GameActionException {
+
         if (numEnlightenmentCenters == 0) {
             Util.getNumEC();
         }
-
         if (numEnlightenmentCenters == enemyECLocs.size()) {
             // once we have found all EC's
         } else {
@@ -25,8 +29,13 @@ public class EC extends RobotPlayer {
             if (scoutID != -1) scoutLocations.put(scoutID, null);
             updateScoutLocs();
         }
-        Util.spawnBot(RobotType.POLITICIAN, Direction.EAST, 150);
+        // For rush strat:
+        // Util.spawnBot(RobotType.POLITICIAN, Direction.EAST, 150);
+        // if (attackingEC) {
+        //     spawnAttackPol();
+        // }
     }
+
 
     /**
      * Spawns 8 scouts in different directions
@@ -76,15 +85,56 @@ public class EC extends RobotPlayer {
      * @throws GameActionException
      */
     static void updateScoutLocs() throws GameActionException{
-        // loop through spawned scouts and update hashmap with location if possible
+        int[] flagInfo = new int[]{0, 0, -1};
         for (int id : scoutLocations.keySet()) {
             int curFlag = Util.tryGetFlag(id);
 
             // make sure it's in range and a flag exists
             if (curFlag != -1 && curFlag != -2) {
-                int[] flagInfo = Util.decryptOffsets(curFlag);
+                flagInfo = Util.decryptOffsets(curFlag);
+                // uses ~1200 bytecode to put and ~1250 to get
                 scoutLocations.put(id, flagInfo);
             }
+            switch (flagInfo[2]) {
+                case 0: break; // function for edge
+                case 1: // attack ec using flaginfo
+                    attackingEC = true;
+                    attackInfo = flagInfo;
+                    System.out.println("Starting to attack");
+                    break;
+                case 2: break; // capture neutral ec using flaginfo
+                default: break;
+            }
+        }
+    }
+
+    /**
+     * Spawns attacking politician
+     *
+     * @throws GameActionException
+     */
+    static void spawnAttackPol() throws GameActionException{
+        double propToGive = 0.9; 
+        int inflToGive = (int) Math.round(propToGive * rc.getInfluence());
+
+        if (!attackerSpawned) {
+            int flagToShow = Util.encryptOffsets(attackInfo[0], attackInfo[1], 5);
+            if (Util.trySetFlag(flagToShow)) {
+                // make spawn bot return ID in the future
+                // TODO: Don't spawn only North - figure it out 
+                Util.spawnBot(RobotType.POLITICIAN, Direction.NORTH, inflToGive);
+                // TODO: Make this an abstract function, with parameters of x-offset, y-offset, 
+                // decryption code and robot type, with a return value of the id of the created object
+                // get politician's ID
+                MapLocation polLoc = rc.adjacentLocation(Direction.NORTH);
+                polID = rc.senseRobotAtLocation(polLoc).ID;
+                attackerSpawned = true;
+            }
+        }
+        // TODO: Make new function 
+        if (Util.tryGetFlag(polID) == 25) {
+            attackingEC = false;
+            System.out.println("No longer attacking");
         }
     }
 }

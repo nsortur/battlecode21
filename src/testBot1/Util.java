@@ -78,10 +78,21 @@ public class Util extends RobotPlayer {
         } else return false;
     }
 
-    static void getNumEC() {
-        numEnlightenmentCenters = 3;
-        // check flag - if it says number of ec's return that
-        // if it does not then equal it to robot count (since this needs to happen immediately)
+    /**
+     * Sets the number of EC's
+     *
+     * @throws GameActionException
+     */
+
+    static void getNumEC() throws GameActionException {
+        if (rc.getRoundNum() < 3) {
+            numEnlightenmentCenters = rc.getRobotCount();
+        } else {
+            numEnlightenmentCenters = -1;
+            // the case where our EC has been converted and then converted back // neutral EC
+            // ideas
+            // TODO ask for help using flags - send a 55 and the someone will respond with correct number of EC's
+        }
     }
 
     /**
@@ -305,5 +316,16 @@ public class Util extends RobotPlayer {
             System.out.println(e);
         }
 
+    }
+
+    /**
+     * Gets absolute location from a decrypted flag
+     * Only works for EC
+     *
+     * @param decrypted the decrypted flag value
+     * @return the absolute map location
+     */
+    static MapLocation getLocFromDecrypt(int[] decrypted, MapLocation curLoc) {
+        return new MapLocation(curLoc.x + decrypted[0], curLoc.y + decrypted[1]);
     }
 }
