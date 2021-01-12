@@ -2,9 +2,8 @@ package testBot1;
 
 import battlecode.common.*;
 
-import java.util.ArrayList;
-
 public class Politician extends RobotPlayer {
+
     static boolean attackingEC;
 
     // our enlightenment center's info (one politician spawned from)
@@ -20,21 +19,25 @@ public class Politician extends RobotPlayer {
             ecID = Util.getECID();
         } else {
             // once we have the home EC's ID
-            if (targetECLoc == null) {
-                int[] ecFlagInfo = Util.decryptOffsets(Util.tryGetFlag(ecID));
+            // checkForTargetECLoc();
+        }
+    }
 
-                if (ecFlagInfo[2] == 5) {
-                    attackingEC = true;
-                    // hardcoded south for now since attack politician spawns in the north
-                    ecLoc = rc.adjacentLocation(Direction.SOUTH);
-                    targetECLoc = Util.getLocFromDecrypt(ecFlagInfo, ecLoc);
-                }
+    public static void defend() throws GameActionException {
+        //constantly checks if theres an enemy bot
+        RobotInfo[] robots = rc.senseNearbyRobots(actionRadius, enemy);
+        for (RobotInfo robot : robots) {
+            if (rc.canEmpower(actionRadius)){
+                rc.empower(actionRadius);
             }
         }
-        if (attackingEC) {
-            attackEnemyEC();
+        // moves in random directions
+        Direction direction = directions[(int) (Math.random() * directions.length)];
+        if(rc.getLocation().add(direction).isWithinDistanceSquared(new MapLocation(0, 0), 15)){ // use friendly EC location instead
+            if(rc.canMove(direction)){
+                rc.move(direction);
+            }
         }
-
     }
 
     static void attackEnemyEC() throws GameActionException{
@@ -66,4 +69,16 @@ public class Politician extends RobotPlayer {
 
     }
 
+    static void checkForTargetECLoc() {
+        if (targetECLoc == null) {
+            int[] ecFlagInfo = Util.decryptOffsets(Util.tryGetFlag(ecID));
+
+            if (ecFlagInfo[2] == 5) {
+                attackingEC = true;
+                // hardcoded south for now since attack politician spawns in the north
+                ecLoc = rc.adjacentLocation(Direction.SOUTH);
+                targetECLoc = Util.getLocFromDecrypt(ecFlagInfo, ecLoc);
+            }
+        }
+    }
 }

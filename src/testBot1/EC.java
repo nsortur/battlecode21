@@ -1,8 +1,6 @@
 package testBot1;
 
 import battlecode.common.*;
-
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 
 public class EC extends RobotPlayer {
@@ -18,6 +16,7 @@ public class EC extends RobotPlayer {
     static LinkedHashMap<Integer, int[]> scoutLocations = new LinkedHashMap<>();
 
     static void run() throws GameActionException {
+
         if (numEnlightenmentCenters == 0) {
             Util.getNumEC();
         }
@@ -29,6 +28,8 @@ public class EC extends RobotPlayer {
             // add scout to linked hashmap if it's spawned
             if (scoutID != -1) scoutLocations.put(scoutID, null);
             updateScoutLocs();
+        }
+        // Util.spawnBot(RobotType.POLITICIAN, Direction.EAST, 150);
 
         }
         if (attackingEC) {
