@@ -29,13 +29,13 @@ public class EC extends RobotPlayer {
             if (scoutID != -1) scoutLocations.put(scoutID, null);
             updateScoutLocs();
         }
+        // For rush strat:
         // Util.spawnBot(RobotType.POLITICIAN, Direction.EAST, 150);
-
-        }
-        if (attackingEC) {
-            spawnAttackPols();
-        }
+        // if (attackingEC) {
+        //     spawnAttackPols();
+        // }
     }
+
 
     /**
      * Spawns 8 scouts in different directions

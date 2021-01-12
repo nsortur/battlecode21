@@ -19,10 +19,15 @@ public class Politician extends RobotPlayer {
             ecID = Util.getECID();
         } else {
             // once we have the home EC's ID
-            // checkForTargetECLoc();
+            checkForTargetECLoc();
         }
     }
 
+    /**
+     * Defends by staying close to home EC
+     *
+     * @throws GameActionException
+     */
     public static void defend() throws GameActionException {
         //constantly checks if theres an enemy bot
         RobotInfo[] robots = rc.senseNearbyRobots(actionRadius, enemy);
@@ -40,6 +45,11 @@ public class Politician extends RobotPlayer {
         }
     }
 
+    /**
+     * Go towards enemy EC and kaboom
+     *
+     * @throws GameActionException
+     */
     static void attackEnemyEC() throws GameActionException{
         /**
          * get location from ec arraylist
@@ -55,21 +65,24 @@ public class Politician extends RobotPlayer {
         RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
         for (RobotInfo robot : attackable) {
             if (robot.type == RobotType.ENLIGHTENMENT_CENTER && rc.canEmpower(actionRadius)) {
-                int ECConvic = robot.getConviction();
-                if (rc.getConviction() > ECConvic) {
-                    Util.trySetFlag(25);
+                Util.trySetFlag(25);
 
-                    // wait for EC to read flag that politician is gonna die
-                    Clock.yield();
-                    attackingEC = false;
-                    rc.empower(actionRadius);
-                }
+                // wait for EC to read flag that politician is gonna die
+                Clock.yield();
+                attackingEC = false;
+                rc.empower(actionRadius);
             }
         }
 
     }
 
-    static void checkForTargetECLoc() {
+    /**
+     * Asks the home EC for the target location, and sets targetECLoc if it's available
+     * Note: it asks for flag last bit 5
+     *
+     * @throws GameActionException
+     */
+    static void checkForTargetECLoc() throws GameActionException{
         if (targetECLoc == null) {
             int[] ecFlagInfo = Util.decryptOffsets(Util.tryGetFlag(ecID));
 
