@@ -15,6 +15,7 @@ public class Politician extends RobotPlayer {
     static MapLocation targetECLoc;
 
     static void run() throws GameActionException {
+        // TODO: change structure of this to account for slanderers->politician
         if (ecID == 0) {
             ecID = Util.getECID();
         } else {
