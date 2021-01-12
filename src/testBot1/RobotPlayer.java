@@ -9,8 +9,6 @@ import java.util.List;
 public strictfp class RobotPlayer {
     static RobotController rc;
 
-    static List<Integer> robotIDs = new ArrayList<>();
-
     static final RobotType[] spawnableRobot = {
             RobotType.POLITICIAN,
             RobotType.SLANDERER,
