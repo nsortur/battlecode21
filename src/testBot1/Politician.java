@@ -2,41 +2,29 @@ package testBot1;
 
 import battlecode.common.*;
 
-import java.util.ArrayList;
-
 public class Politician extends RobotPlayer {
+    
+    static final Team enemy = rc.getTeam().opponent();
+    static final int actionRadius = rc.getType().actionRadiusSquared;
 
     static void run() throws GameActionException {
-        Team enemy = rc.getTeam().opponent();
-        int actionRadius = rc.getType().actionRadiusSquared;
-        int convic = rc.getConviction();
-        RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
+        
+    }
 
-        /*
-        if (attackable.length != 0 && rc.canEmpower(actionRadius) && convic > 10) {
-            System.out.println("empowering...");
-            rc.empower(actionRadius);
-            System.out.println("empowered");
-            return;
-        }
-        */
-        ArrayList<RobotType> types = new ArrayList<>();
-        RobotInfo[] robots = rc.senseNearbyRobots();
+    public static void defend() throws GameActionException {
+        //constantly checks if theres an enemy bot
+        RobotInfo[] robots = rc.senseNearbyRobots(actionRadius, enemy);
         for (RobotInfo robot : robots) {
-            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && robot.team == enemy) {
-               types.add(robot.type);
+            if (rc.canEmpower(actionRadius)){
+                rc.empower(actionRadius);
             }
         }
-        System.out.println("Types: " + types.toString());
-        if(types.contains(RobotType.ENLIGHTENMENT_CENTER)){
-            System.out.println("Contains");
-            if (rc.canEmpower(4)){
-                rc.empower(4);
+        // moves in random directions
+        Direction direction = directions[(int) (Math.random() * directions.length)];
+        if(rc.getLocation().add(direction).isWithinDistanceSquared(new MapLocation(0, 0), 15)){ // use friendly EC location instead
+            if(rc.canMove(direction)){
+                rc.move(direction);
             }
-
         }
-
-        Util.greedyPath(new MapLocation(25064, 12919));
-
     }
 }

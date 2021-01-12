@@ -6,12 +6,12 @@ import java.util.LinkedHashMap;
 public class EC extends RobotPlayer {
 
     static boolean[] scoutsSpawned = new boolean[8];
-
     // key: scout IDs, value: their location
     // in order of clockwise direction starting at north, use iterator if you need direction
     static LinkedHashMap<Integer, int[]> scoutLocations = new LinkedHashMap<>();
 
     static void run() throws GameActionException {
+
         if (numEnlightenmentCenters == 0) {
             Util.getNumEC();
         }
@@ -25,8 +25,9 @@ public class EC extends RobotPlayer {
             if (scoutID != -1) scoutLocations.put(scoutID, null);
             updateScoutLocs();
         }
-        Util.spawnBot(RobotType.POLITICIAN, Direction.EAST, 150);
-    }
+        // Util.spawnBot(RobotType.POLITICIAN, Direction.EAST, 150);
+
+        }
 
     /**
      * Spawns 8 scouts in different directions
