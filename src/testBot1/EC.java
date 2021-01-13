@@ -13,6 +13,7 @@ public class EC extends RobotPlayer {
     static int[] attackInfo;
     static int polID = -1;
 
+
     static int numEnlightenmentCenters = 0; // figure out how to calculate this value (kind of did)
     static HashSet<MapLocation> enemyECLocs = new HashSet<>();
 
@@ -39,8 +40,42 @@ public class EC extends RobotPlayer {
         // if (attackingEC) {
         //     spawnAttackPol();
         // }
+        if (enemyECLocs.size() > 0) {
+            spawnSlanderers();
+        }
+
     }
 
+    /**
+     * Spawn slanderers that hide
+     *
+     * @throws GameActionException
+     */
+
+    static void spawnSlanderers() throws GameActionException {
+        int roundNum = rc.getRoundNum();
+        if (roundNum > 3 && roundNum < 200 && roundNum % 5 == 0) {
+            // set flag
+
+            setFlagBasedOnDirection(getDirectionForSlanderer());
+
+            // spawn bot
+            int inflToGive = (int) Math.round(slandProp * rc.getInfluence());
+            Direction dir = getOpenDirection();
+            Util.spawnBot(RobotType.SLANDERER, dir, inflToGive);
+
+        }
+    }
+
+    static Direction getDirectionForSlanderer() throws GameActionException {
+        int indexSum = 0;
+        for (MapLocation enemyLOC : enemyECLocs) {
+            Direction dir = rc.getLocation().directionTo(enemyLOC);
+            indexSum += directionsList.indexOf(dir);
+        }
+        int averageIndex = indexSum / enemyECLocs.size();
+        return directions[(averageIndex + 4) % 8];
+    }
 
     /**
      * Spawns 8 scouts in different directions
@@ -53,7 +88,7 @@ public class EC extends RobotPlayer {
             if (!scoutsSpawned[i]) {
                 if (Util.spawnBot(RobotType.MUCKRAKER, directions[i], 1)) {
                     scoutsSpawned[i] = true;
-                    setFlagScout(directions[i]);
+                    setFlagBasedOnDirection(directions[i]);
                     MapLocation scoutLoc = rc.adjacentLocation(directions[i]);
                     return rc.senseRobotAtLocation(scoutLoc).ID;
                 }
@@ -69,7 +104,7 @@ public class EC extends RobotPlayer {
      * @param dir the direction the scout should move in
      * @throws GameActionException
      */
-    static void setFlagScout(Direction dir) throws GameActionException {
+    static void setFlagBasedOnDirection(Direction dir) throws GameActionException {
         switch (dir) {
             case NORTH: Util.trySetFlag(11); break;
             case NORTHEAST: Util.trySetFlag(12); break;
@@ -105,6 +140,7 @@ public class EC extends RobotPlayer {
                 case 1: // attack ec using flaginfo
                     attackingEC = true;
                     attackInfo = flagInfo;
+                    enemyECLocs.add(Util.getLocFromDecrypt(flagInfo, rc.getLocation()));
                     System.out.println("Starting to attack");
                     break;
                 case 2: break; // capture neutral ec using flaginfo
@@ -120,7 +156,7 @@ public class EC extends RobotPlayer {
      */
     static void spawnAttackPol() throws GameActionException{
         if (!attackerSpawned) {
-            polID = spawnBot(attackInfo[0], attackInfo[1], 5, RobotType.POLITICIAN, polProp);
+            polID = spawnBotToLocation(attackInfo[0], attackInfo[1], 5, RobotType.POLITICIAN, polProp);
             attackerSpawned = true;
         }
     }
@@ -148,7 +184,7 @@ public class EC extends RobotPlayer {
      * @return
      */
 
-    static int spawnBot(int xOffset, int yOffset, int decryptCode, RobotType robotType, double prop) throws GameActionException {
+    static int spawnBotToLocation(int xOffset, int yOffset, int decryptCode, RobotType robotType, double prop) throws GameActionException {
         int inflToGive = (int) Math.round(prop * rc.getInfluence());
         int flagToShow = Util.encryptOffsets(xOffset, yOffset, decryptCode);
         if (Util.trySetFlag(flagToShow)) {

@@ -23,7 +23,8 @@ public class Muckraker extends RobotPlayer {
      */
     static void runScout() throws GameActionException {
         if (scoutDir == null) {
-            scoutDir = getScoutDirection();
+            ecID = Util.getECID();
+            scoutDir = Util.getScoutDirection(ecID);
             // EC is 1 unit in opposite direction scout is heading at start
             homeECLoc = rc.getLocation().subtract(scoutDir);
         }
@@ -34,37 +35,6 @@ public class Muckraker extends RobotPlayer {
         } else {
             Util.tryMove(scoutDir);
             // Util.moveNaive(new MapLocation(10026, 23926));
-        }
-    }
-
-    /**
-     * Calculates direction scout needs to move in
-     * @return a direction
-     * @throws GameActionException
-     */
-    static Direction getScoutDirection() throws GameActionException {
-        ecID = Util.getECID();
-        int ecFlag = Util.tryGetFlag(ecID);
-
-        switch (ecFlag) {
-            case 11:
-                return Direction.NORTH;
-            case 12:
-                return Direction.NORTHEAST;
-            case 13:
-                return Direction.EAST;
-            case 14:
-                return Direction.SOUTHEAST;
-            case 15:
-                return Direction.SOUTH;
-            case 16:
-                return Direction.SOUTHWEST;
-            case 17:
-                return Direction.WEST;
-            case 18:
-                return Direction.NORTHWEST;
-            default:
-                throw new IllegalStateException("Unexpected value: " + ecFlag);
         }
     }
 

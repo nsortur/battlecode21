@@ -15,14 +15,32 @@ public class Politician extends RobotPlayer {
     static MapLocation targetECLoc;
 
     static void run() throws GameActionException {
-        // TODO: change structure of this to account for slanderers->politician
-        if (ecID == 0) {
+        // TODO: Fix bug where newly created politicans (from slanderers) have no ecID and then find there way back
+        // to the home base, giving me an error.
+        if (Util.isFriendlyECNear() && ecID == 0) {
             ecID = Util.getECID();
-        } else {
-            // once we have the home EC's ID
             checkForTargetECLoc();
+        } else if (targetECLoc != null) {
+            Util.greedyPath(targetECLoc);
+        } else {
+            // transformed
+            // TODO: put up help flag and if politican nearby sees it gives target location
+            // or we can figure out what to do with them
+            Team enemy = rc.getTeam().opponent();
+            int actionRadius = rc.getType().actionRadiusSquared;
+            RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
+            if (attackable.length != 0 && rc.canEmpower(actionRadius)) {
+                //System.out.println("empowering...");
+                rc.empower(actionRadius);
+                //System.out.println("empowered");
+                return;
+            }
+            if (Util.tryMove(Util.randomDirection())) {
+                //System.out.println("I moved!");
+            }
         }
     }
+
 
     /**
      * Defends by staying close to home EC
@@ -32,10 +50,8 @@ public class Politician extends RobotPlayer {
     public static void defend() throws GameActionException {
         //constantly checks if theres an enemy bot
         RobotInfo[] robots = rc.senseNearbyRobots(actionRadius, enemy);
-        for (RobotInfo robot : robots) {
-            if (rc.canEmpower(actionRadius)){
-                rc.empower(actionRadius);
-            }
+        if ((robots.length != 0) && (rc.canEmpower(actionRadius))) {
+            rc.empower(actionRadius);
         }
         // moves in random directions
         Direction direction = directions[(int) (Math.random() * directions.length)];
@@ -90,7 +106,7 @@ public class Politician extends RobotPlayer {
             if (ecFlagInfo[2] == 5) {
                 attackingEC = true;
                 // hardcoded south for now since attack politician spawns in the north
-                ecLoc = rc.adjacentLocation(Direction.SOUTH);
+                ecLoc = Util.locationOfFriendlyEC();
                 targetECLoc = Util.getLocFromDecrypt(ecFlagInfo, ecLoc);
             }
         }

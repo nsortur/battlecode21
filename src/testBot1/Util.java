@@ -122,8 +122,42 @@ public class Util extends RobotPlayer {
                 return robot.ID;
             }
         }
-        throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "No enlightenment center");
+        throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "can't get ECID");
     }
+
+    /**
+     * Checks if our EC in area
+     *
+     * @return true if there is an EC
+     * @throws GameActionException
+     */
+
+    static boolean isFriendlyECNear() {
+        RobotInfo[] robots = rc.senseNearbyRobots();
+        for (RobotInfo robot : robots) {
+            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && robot.team == rc.getTeam()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Gets location of friendly EC
+     *
+     * @return location of friendly ec, provided there is one
+     * @throws GameActionException if out of range
+     */
+    static MapLocation locationOfFriendlyEC() throws GameActionException {
+        RobotInfo[] robots = rc.senseNearbyRobots();
+        for (RobotInfo robot : robots) {
+            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && robot.team == rc.getTeam()) {
+                return robot.location;
+            }
+        }
+        throw new GameActionException(GameActionExceptionType.OUT_OF_RANGE, "out of range of our ec");
+    }
+
 
     // preceding "1" bit means positive, "2" means negative
     // valid coordinate codes can range from from 264264 (-64, -64) 100100 (0, 0) to 164164 (64, 64)
@@ -312,5 +346,37 @@ public class Util extends RobotPlayer {
      */
     static MapLocation getLocFromDecrypt(int[] decrypted, MapLocation curLoc) {
         return new MapLocation(curLoc.x + decrypted[0], curLoc.y + decrypted[1]);
+    }
+
+    /**
+     * Calculates direction scout needs to move in
+     *
+     * @return a direction
+     * @throws GameActionException
+     */
+
+    static Direction getScoutDirection(int ecID) throws GameActionException {
+        int ecFlag = Util.tryGetFlag(ecID);
+
+        switch (ecFlag) {
+            case 11:
+                return Direction.NORTH;
+            case 12:
+                return Direction.NORTHEAST;
+            case 13:
+                return Direction.EAST;
+            case 14:
+                return Direction.SOUTHEAST;
+            case 15:
+                return Direction.SOUTH;
+            case 16:
+                return Direction.SOUTHWEST;
+            case 17:
+                return Direction.WEST;
+            case 18:
+                return Direction.NORTHWEST;
+            default:
+                throw new IllegalStateException("Unexpected value: " + ecFlag);
+        }
     }
 }

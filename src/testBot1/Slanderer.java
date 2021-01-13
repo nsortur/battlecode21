@@ -16,19 +16,24 @@ public class Slanderer extends RobotPlayer {
     static void run() throws GameActionException {
         if (ecID == 0) {
             ecID = Util.getECID();
-        } else {
-            // once we have the home EC's ID
-            if (targetLoc == null) {
-                int[] ecFlagInfo = Util.decryptOffsets(Util.tryGetFlag(ecID));
-
-                if (ecFlagInfo[2] == 6) {
-                    // hardcoded south for now since attack politician spawns in the north
-                    ecLoc = rc.adjacentLocation(Direction.SOUTH);
-                    targetLoc = Util.getLocFromDecrypt(ecFlagInfo, ecLoc);
-                }
-            }
         }
-        Util.greedyPath(targetLoc);
+        // TODO: Should i give slanderer a location or only a direction?
+        Direction direction = Util.getScoutDirection(ecID);
+        MapLocation newLocation = rc.getLocation();
+        for (int i = 0; i < 3; i++) {
+            newLocation = newLocation.add(direction);
+        }
+        if (rc.onTheMap(newLocation)) {
+            // TODO: Make it so the slanderer is far enough away to avoid muckraker on edge
+            // TODO: Fix the bug where if the edge is 8 squares away it will see that the first 4 are fine, and the next 4 are fine
+            // and then hit edge
+            Util.greedyPath(newLocation);
+        } else {
+            System.out.println("Done");
+        }
 
     }
+
+
+
 }
