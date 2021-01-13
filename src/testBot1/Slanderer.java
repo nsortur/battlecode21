@@ -1,6 +1,5 @@
 package testBot1;
 
-import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.Team;
@@ -16,22 +15,22 @@ public class Slanderer extends RobotPlayer {
     static void run() throws GameActionException {
         if (ecID == 0) {
             ecID = Util.getECID();
+            checkForTargetLoc();
         }
-        // TODO: Should i give slanderer a location or only a direction?
-        Direction direction = Util.getScoutDirection(ecID);
-        MapLocation newLocation = rc.getLocation();
-        for (int i = 0; i < 3; i++) {
-            newLocation = newLocation.add(direction);
-        }
-        if (rc.onTheMap(newLocation)) {
-            // TODO: Make it so the slanderer is far enough away to avoid muckraker on edge
-            // TODO: Fix the bug where if the edge is 8 squares away it will see that the first 4 are fine, and the next 4 are fine
-            // and then hit edge
-            Util.greedyPath(newLocation);
-        } else {
-            System.out.println("Done");
-        }
+        Util.greedyPath(targetLoc);
 
+    }
+
+    static void checkForTargetLoc() throws GameActionException{
+        if (targetLoc == null) {
+            int[] ecFlagInfo = Util.decryptOffsets(Util.tryGetFlag(ecID));
+
+            if (ecFlagInfo[2] == 7) {
+
+                ecLoc = Util.locationOfFriendlyEC();
+                targetLoc = Util.getLocFromDecrypt(ecFlagInfo, ecLoc);
+            }
+        }
     }
 
 

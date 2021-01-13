@@ -2,8 +2,10 @@ package testBot1;
 
 import battlecode.common.*;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 public class EC extends RobotPlayer {
 
@@ -56,13 +58,22 @@ public class EC extends RobotPlayer {
         int roundNum = rc.getRoundNum();
         if (roundNum > 3 && roundNum < 200 && roundNum % 5 == 0) {
             // set flag
+            Direction direction = getDirectionForSlanderer();
+            int index = directionsList.indexOf(direction);
 
-            setFlagBasedOnDirection(getDirectionForSlanderer());
+            // gets the scout information based on direction slanderer is going
+            List values = new ArrayList(scoutLocations.values());
+            int[] loc = (int[]) values.get(index);
+
+            // gets the map location the slanderer should go to
+            MapLocation scoutLoc = Util.getLocFromDecrypt(loc, rc.getLocation());
+            MapLocation optimalLoc = scoutLoc;
+            for (int i = 0; i < 6; i++) {
+                optimalLoc = optimalLoc.subtract(direction);
+            }
 
             // spawn bot
-            int inflToGive = (int) Math.round(slandProp * rc.getInfluence());
-            Direction dir = getOpenDirection();
-            Util.spawnBot(RobotType.SLANDERER, dir, inflToGive);
+            spawnBotToLocation(optimalLoc, 7, RobotType.SLANDERER, slandProp);
 
         }
     }
@@ -187,6 +198,23 @@ public class EC extends RobotPlayer {
     static int spawnBotToLocation(int xOffset, int yOffset, int decryptCode, RobotType robotType, double prop) throws GameActionException {
         int inflToGive = (int) Math.round(prop * rc.getInfluence());
         int flagToShow = Util.encryptOffsets(xOffset, yOffset, decryptCode);
+        if (Util.trySetFlag(flagToShow)) {
+            // spawn bot
+            Direction dir = getOpenDirection();
+            Util.spawnBot(robotType, dir, inflToGive);
+
+            // get ID
+            MapLocation polLoc = rc.adjacentLocation(dir);
+            return rc.senseRobotAtLocation(polLoc).ID;
+        } else {
+            throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Cannot set flag");
+        }
+    }
+
+    static int spawnBotToLocation(MapLocation destLoc, int decryptCode, RobotType robotType, double prop) throws GameActionException {
+        int inflToGive = (int) Math.round(prop * rc.getInfluence());
+        int[] offsets = Util.getOffsetsFromLoc(rc.getLocation(), destLoc);
+        int flagToShow = Util.encryptOffsets(offsets[0], offsets[1], decryptCode);
         if (Util.trySetFlag(flagToShow)) {
             // spawn bot
             Direction dir = getOpenDirection();

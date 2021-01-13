@@ -20,6 +20,7 @@ public class Politician extends RobotPlayer {
         if (Util.isFriendlyECNear() && ecID == 0) {
             ecID = Util.getECID();
             checkForTargetECLoc();
+            System.out.println("Error");
         } else if (targetECLoc != null) {
             Util.greedyPath(targetECLoc);
         } else {
@@ -105,7 +106,7 @@ public class Politician extends RobotPlayer {
 
             if (ecFlagInfo[2] == 5) {
                 attackingEC = true;
-                // hardcoded south for now since attack politician spawns in the north
+
                 ecLoc = Util.locationOfFriendlyEC();
                 targetECLoc = Util.getLocFromDecrypt(ecFlagInfo, ecLoc);
             }
