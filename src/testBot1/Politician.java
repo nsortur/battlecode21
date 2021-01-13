@@ -2,9 +2,8 @@ package testBot1;
 
 import battlecode.common.*;
 
-import java.util.ArrayList;
-
 public class Politician extends RobotPlayer {
+
     static boolean attackingEC;
 
     // our enlightenment center's info (one politician spawned from)
@@ -16,29 +15,43 @@ public class Politician extends RobotPlayer {
     static MapLocation targetECLoc;
 
     static void run() throws GameActionException {
+        // TODO: change structure of this to account for slanderers->politician
         if (ecID == 0) {
             ecID = Util.getECID();
         } else {
             // once we have the home EC's ID
-            if (targetECLoc == null) {
-                int[] ecFlagInfo = Util.decryptOffsets(Util.tryGetFlag(ecID));
-
-                if (ecFlagInfo[2] == 5) {
-                    attackingEC = true;
-                    // hardcoded south for now since attack politician spawns in the north
-                    ecLoc = rc.adjacentLocation(Direction.SOUTH);
-                    targetECLoc = Util.getLocFromDecrypt(ecFlagInfo, ecLoc);
-                }
-            }
+            checkForTargetECLoc();
         }
-        if (attackingEC) {
-            attackEnemyEC();
-        }
-
     }
 
-    static void attackEnemyEC() throws GameActionException{
+    /**
+     * Defends by staying close to home EC
+     *
+     * @throws GameActionException
+     */
+    public static void defend() throws GameActionException {
+        //constantly checks if theres an enemy bot
+        RobotInfo[] robots = rc.senseNearbyRobots(actionRadius, enemy);
+        for (RobotInfo robot : robots) {
+            if (rc.canEmpower(actionRadius)){
+                rc.empower(actionRadius);
+            }
+        }
+        // moves in random directions
+        Direction direction = directions[(int) (Math.random() * directions.length)];
+        if(rc.getLocation().add(direction).isWithinDistanceSquared(new MapLocation(0, 0), 15)){ // use friendly EC location instead
+            if(rc.canMove(direction)){
+                rc.move(direction);
+            }
+        }
+    }
 
+    /**
+     * Go towards enemy EC and kaboom
+     *
+     * @throws GameActionException
+     */
+    static void attackEnemyEC() throws GameActionException{
         /**
          * get location from ec arraylist
          * calculate conviction to give (40% of EC conviction each for two politicians, 1% for a muckraker)
@@ -53,7 +66,6 @@ public class Politician extends RobotPlayer {
         RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
         for (RobotInfo robot : attackable) {
             if (robot.type == RobotType.ENLIGHTENMENT_CENTER && rc.canEmpower(actionRadius)) {
-                // TODO: check that EC influence is less than politician conviction
                 Util.trySetFlag(25);
 
                 // wait for EC to read flag that politician is gonna die
@@ -65,4 +77,22 @@ public class Politician extends RobotPlayer {
 
     }
 
+    /**
+     * Asks the home EC for the target location, and sets targetECLoc if it's available
+     * Note: it asks for flag last bit 5
+     *
+     * @throws GameActionException
+     */
+    static void checkForTargetECLoc() throws GameActionException{
+        if (targetECLoc == null) {
+            int[] ecFlagInfo = Util.decryptOffsets(Util.tryGetFlag(ecID));
+
+            if (ecFlagInfo[2] == 5) {
+                attackingEC = true;
+                // hardcoded south for now since attack politician spawns in the north
+                ecLoc = rc.adjacentLocation(Direction.SOUTH);
+                targetECLoc = Util.getLocFromDecrypt(ecFlagInfo, ecLoc);
+            }
+        }
+    }
 }
