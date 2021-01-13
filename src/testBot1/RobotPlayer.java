@@ -38,7 +38,7 @@ public strictfp class RobotPlayer {
 
     static int turnCount;
 
-    static final double polProp = 0.3;
+    static final double attackPolProp = 0.7;
     static final double slandProp = 0.5;
 
     // do we need the location of our own EC's?

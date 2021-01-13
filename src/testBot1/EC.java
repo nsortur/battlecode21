@@ -10,7 +10,8 @@ import java.util.List;
 public class EC extends RobotPlayer {
 
     static boolean[] scoutsSpawned = new boolean[8];
-    static boolean attackerSpawned;
+
+    static boolean attackPolSpawned;
     static boolean attackingEC;
     static int[] attackInfo;
     static int polID = -1;
@@ -42,10 +43,14 @@ public class EC extends RobotPlayer {
         // if (attackingEC) {
         //     spawnAttackPol();
         // }
-        if (enemyECLocs.size() > 0) {
+        if (enemyECLocs.size() > 0) { //why?
             spawnSlanderers();
         }
 
+        if (rc.getInfluence() > 12000 && !attackPolSpawned && spawnAttackPol()){
+            attackPolSpawned = true;
+        }
+        checkAttackPol();
     }
 
     /**
@@ -163,13 +168,12 @@ public class EC extends RobotPlayer {
     /**
      * Spawns attacking politician
      *
+     * @return whether attack pol is spawned
      * @throws GameActionException
      */
-    static void spawnAttackPol() throws GameActionException{
-        if (!attackerSpawned) {
-            polID = spawnBotToLocation(attackInfo[0], attackInfo[1], 5, RobotType.POLITICIAN, polProp);
-            attackerSpawned = true;
-        }
+    static boolean spawnAttackPol() throws GameActionException{
+        polID = spawnBotToLocation(attackInfo[0], attackInfo[1], 5, RobotType.POLITICIAN, attackPolProp);
+        return polID != -1;
     }
 
     /**
@@ -192,9 +196,9 @@ public class EC extends RobotPlayer {
      * @param decryptCode the decryption code to use in the dictionary
      * @param robotType the type of robot to spawn
      * @param prop the proportion of influence you want to give this robot
-     * @return
+     *
+     * @return -1 if the EC is surrounded with enemy bots, otherwise the ID of unit spawned
      */
-
     static int spawnBotToLocation(int xOffset, int yOffset, int decryptCode, RobotType robotType, double prop) throws GameActionException {
         int inflToGive = (int) Math.round(prop * rc.getInfluence());
         int flagToShow = Util.encryptOffsets(xOffset, yOffset, decryptCode);
@@ -205,12 +209,26 @@ public class EC extends RobotPlayer {
 
             // get ID
             MapLocation polLoc = rc.adjacentLocation(dir);
-            return rc.senseRobotAtLocation(polLoc).ID;
+            RobotInfo rob = rc.senseRobotAtLocation(polLoc);
+            if (rob.team == rc.getTeam()) {
+                return rob.ID;
+            } else return -1;
+
         } else {
             throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Cannot set flag");
         }
     }
 
+    /**
+     *
+     * @param destLoc destination to send robot towards
+     * @param decryptCode the decryption code to use in the dictionary
+     * @param robotType the type of robot to spawn
+     * @param prop the proportion of influence you want to give this robot
+     *
+     * @return -1 if the EC is surrounded with enemy bots, otherwise the ID of unit spawned
+     * @throws GameActionException
+     */
     static int spawnBotToLocation(MapLocation destLoc, int decryptCode, RobotType robotType, double prop) throws GameActionException {
         int inflToGive = (int) Math.round(prop * rc.getInfluence());
         int[] offsets = Util.getOffsetsFromLoc(rc.getLocation(), destLoc);
@@ -222,7 +240,11 @@ public class EC extends RobotPlayer {
 
             // get ID
             MapLocation polLoc = rc.adjacentLocation(dir);
-            return rc.senseRobotAtLocation(polLoc).ID;
+            RobotInfo rob = rc.senseRobotAtLocation(polLoc);
+            if (rob.team == rc.getTeam()) {
+                return rob.ID;
+            } else return -1;
+
         } else {
             throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Cannot set flag");
         }

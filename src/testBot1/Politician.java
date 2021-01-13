@@ -20,9 +20,9 @@ public class Politician extends RobotPlayer {
         if (Util.isFriendlyECNear() && ecID == 0) {
             ecID = Util.getECID();
             checkForTargetECLoc();
-            System.out.println("Error");
         } else if (targetECLoc != null) {
-            Util.greedyPath(targetECLoc);
+            attackEnemyEC();
+
         } else {
             // transformed
             // TODO: put up help flag and if politican nearby sees it gives target location
@@ -84,6 +84,8 @@ public class Politician extends RobotPlayer {
         for (RobotInfo robot : attackable) {
             if (robot.type == RobotType.ENLIGHTENMENT_CENTER && rc.canEmpower(actionRadius)) {
                 Util.trySetFlag(25);
+                // make so that last politician to kill will raise the flag
+                // other politicians will constantly check for a 25 flag and if they see it, they won't empower
 
                 // wait for EC to read flag that politician is gonna die
                 Clock.yield();
