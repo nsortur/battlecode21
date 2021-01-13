@@ -80,7 +80,7 @@ public class Muckraker extends RobotPlayer {
         for (RobotInfo robot : robots) {
             if (robot.type == RobotType.ENLIGHTENMENT_CENTER && robot.team == rc.getTeam().opponent()) {
                 MapLocation ecLoc = robot.location;
-                enemyECLocs.add(ecLoc);
+                // enemyECLocs.add(ecLoc); do we need to do this? why?
 
                 int x_offset = ecLoc.x - homeECLoc.x;
                 int y_offset = ecLoc.y - homeECLoc.y;

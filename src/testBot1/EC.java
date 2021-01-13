@@ -1,6 +1,8 @@
 package testBot1;
 
 import battlecode.common.*;
+
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 
 public class EC extends RobotPlayer {
@@ -11,6 +13,9 @@ public class EC extends RobotPlayer {
     static int[] attackInfo;
     static int polID = -1;
 
+    static int numEnlightenmentCenters = 0; // figure out how to calculate this value (kind of did)
+    static HashSet<MapLocation> enemyECLocs = new HashSet<>();
+
     // key: scout IDs, value: their location
     // in order of clockwise direction starting at north, use iterator if you need direction
     static LinkedHashMap<Integer, int[]> scoutLocations = new LinkedHashMap<>();
@@ -18,7 +23,7 @@ public class EC extends RobotPlayer {
     static void run() throws GameActionException {
 
         if (numEnlightenmentCenters == 0) {
-            Util.getNumEC();
+            getNumEC();
         }
         if (numEnlightenmentCenters == enemyECLocs.size()) {
             // once we have found all EC's
@@ -114,27 +119,81 @@ public class EC extends RobotPlayer {
      * @throws GameActionException
      */
     static void spawnAttackPol() throws GameActionException{
-        double propToGive = 0.9; 
-        int inflToGive = (int) Math.round(propToGive * rc.getInfluence());
-
         if (!attackerSpawned) {
-            int flagToShow = Util.encryptOffsets(attackInfo[0], attackInfo[1], 5);
-            if (Util.trySetFlag(flagToShow)) {
-                // make spawn bot return ID in the future
-                // TODO: Don't spawn only North - figure it out 
-                Util.spawnBot(RobotType.POLITICIAN, Direction.NORTH, inflToGive);
-                // TODO: Make this an abstract function, with parameters of x-offset, y-offset, 
-                // decryption code and robot type, with a return value of the id of the created object
-                // get politician's ID
-                MapLocation polLoc = rc.adjacentLocation(Direction.NORTH);
-                polID = rc.senseRobotAtLocation(polLoc).ID;
-                attackerSpawned = true;
-            }
+            polID = spawnBot(attackInfo[0], attackInfo[1], 5, RobotType.POLITICIAN, polProp);
+            attackerSpawned = true;
         }
-        // TODO: Make new function 
+    }
+
+    /**
+     * Checks to see if attack pol has killed the enemy EC
+     *
+     * @throws GameActionException
+     */
+    static void checkAttackPol() throws GameActionException {
         if (Util.tryGetFlag(polID) == 25) {
             attackingEC = false;
             System.out.println("No longer attacking");
+        }
+    }
+
+    /**
+     * Spawns a bot that heads toward a given location by putting up a flag
+     *
+     * @param xOffset the x offset the bot should go to
+     * @param yOffset the y offset the bot should go to
+     * @param decryptCode the decryption code to use in the dictionary
+     * @param robotType the type of robot to spawn
+     * @param prop the proportion of influence you want to give this robot
+     * @return
+     */
+
+    static int spawnBot(int xOffset, int yOffset, int decryptCode, RobotType robotType, double prop) throws GameActionException {
+        int inflToGive = (int) Math.round(prop * rc.getInfluence());
+        int flagToShow = Util.encryptOffsets(xOffset, yOffset, decryptCode);
+        if (Util.trySetFlag(flagToShow)) {
+            // spawn bot
+            Direction dir = getOpenDirection();
+            Util.spawnBot(robotType, dir, inflToGive);
+
+            // get ID
+            MapLocation polLoc = rc.adjacentLocation(dir);
+            return rc.senseRobotAtLocation(polLoc).ID;
+        } else {
+            throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Cannot set flag");
+        }
+    }
+
+    /**
+     * Gets an open direction to spawn to
+     *
+     * @return a direction that is empty next to EC
+     * @throws GameActionException
+     */
+
+    static Direction getOpenDirection() throws GameActionException {
+        for (Direction direction : directions) {
+            if (!rc.isLocationOccupied(rc.adjacentLocation(direction))) {
+                return direction;
+            }
+        }
+        return Direction.NORTH;
+    }
+
+    /**
+     * Sets the number of EC's
+     *
+     * @throws GameActionException
+     */
+
+    static void getNumEC() throws GameActionException {
+        if (rc.getRoundNum() < 3) {
+            numEnlightenmentCenters = rc.getRobotCount();
+        } else {
+            numEnlightenmentCenters = -1;
+            // the case where our EC has been converted and then converted back // neutral EC
+            // ideas
+            // TODO ask for help using flags - send a 55 and the someone will respond with correct number of EC's
         }
     }
 }

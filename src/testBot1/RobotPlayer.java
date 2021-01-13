@@ -36,14 +36,10 @@ public strictfp class RobotPlayer {
             Direction.WEST,
     };
 
-    // TODO: Put all of these variables in the EC file
     static int turnCount;
-    static int numMuckrakers = 0;
-    static int numSlanderers = 0;
-    static int numPoliticians = 0;
-    static int numEnlightenmentCenters = 0; // figure out how to calculate this value (kind of did)
-    static HashSet<MapLocation> enemyECLocs = new HashSet<>();
-    static ArrayList<MapLocation> ourECLocs = new ArrayList<>();
+
+    static final double polProp = 0.3;
+    static final double slandProp = 0.5;
 
     // do we need the location of our own EC's?
 

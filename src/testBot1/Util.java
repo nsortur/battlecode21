@@ -78,22 +78,7 @@ public class Util extends RobotPlayer {
         } else return false;
     }
 
-    /**
-     * Sets the number of EC's
-     *
-     * @throws GameActionException
-     */
 
-    static void getNumEC() throws GameActionException {
-        if (rc.getRoundNum() < 3) {
-            numEnlightenmentCenters = rc.getRobotCount();
-        } else {
-            numEnlightenmentCenters = -1;
-            // the case where our EC has been converted and then converted back // neutral EC
-            // ideas
-            // TODO ask for help using flags - send a 55 and the someone will respond with correct number of EC's
-        }
-    }
 
     /**
      * Sets a flag
