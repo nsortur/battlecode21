@@ -11,7 +11,8 @@ public class Politician extends RobotPlayer {
     static MapLocation ecLoc;
 
     static final Team enemy = rc.getTeam().opponent();
-    static final int actionRadius = rc.getType().actionRadiusSquared;
+    static final int actionRadius = 2;
+            //rc.getType().actionRadiusSquared;
     static MapLocation targetECLoc;
 
     static void run() throws GameActionException {
@@ -28,7 +29,6 @@ public class Politician extends RobotPlayer {
             // TODO: put up help flag and if politican nearby sees it gives target location
             // or we can figure out what to do with them
             Team enemy = rc.getTeam().opponent();
-            int actionRadius = rc.getType().actionRadiusSquared;
             RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
             if (attackable.length != 0 && rc.canEmpower(actionRadius)) {
                 //System.out.println("empowering...");

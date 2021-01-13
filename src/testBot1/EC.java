@@ -46,8 +46,12 @@ public class EC extends RobotPlayer {
         if (enemyECLocs.size() > 0) { //why?
             spawnSlanderers();
         }
-
-        if (rc.getInfluence() > 12000 && !attackPolSpawned && spawnAttackPol()){
+        // bid influence
+        if (rc.getRoundNum() > 500 && rc.getTeamVotes() < 1502){
+            rc.bid((int) (0.15 * rc.getInfluence()));
+        }
+        // spawn attack politician
+        if (rc.getInfluence() > 11000 && !attackPolSpawned && spawnAttackPol()){
             attackPolSpawned = true;
         }
         checkAttackPol();
