@@ -45,6 +45,8 @@ public class EC extends RobotPlayer {
         // }
         if (enemyECLocs.size() > 0) { //why?
             spawnSlanderers();
+            spawnDefensivePoliticians();
+            spawnOffensiveMuckrakers();
         }
         // bid influence
         if (rc.getRoundNum() > 500 && rc.getTeamVotes() < 1502){
@@ -55,6 +57,22 @@ public class EC extends RobotPlayer {
             attackPolSpawned = true;
         }
         checkAttackPol();
+    }
+
+    // TODO: Make scouts greedy path!!!
+
+    static void spawnDefensivePoliticians() throws GameActionException {
+        RobotInfo[] robots = rc.senseNearbyRobots();
+        for (RobotInfo robot : robots) {
+
+        }
+    }
+
+    static void spawnOffensiveMuckrakers() throws GameActionException {
+        int roundNum = rc.getRoundNum();
+        if (roundNum > 10 && roundNum % 3 == 0) {
+            spawnBotToLocation(enemyECLocs.iterator().next(), 9, RobotType.MUCKRAKER, 1);
+        }
     }
 
     /**
