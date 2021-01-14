@@ -1,6 +1,9 @@
-package piedPiper;
+package notABotJustTest;
 
-import battlecode.common.*;
+import battlecode.common.Direction;
+import battlecode.common.GameActionException;
+import battlecode.common.MapLocation;
+import battlecode.common.RobotType;
 
 import java.util.HashSet;
 
@@ -13,36 +16,7 @@ public class EC extends RobotPlayer {
     static HashSet<Integer> scoutID = new HashSet<>();
 
     static void run() throws GameActionException {
-        boolean isFlagUnimportant = true;
-        // IMPORTANT - We cannot spawn anything on the first turn
-        // The order of these functions matter, it's the priority of spawning bots
-
-        // Get the number of enlightenment centers
-        if (numEnlightenmentCenters == 0) {
-            getNumEC();
-        }
-
-        // if found neutral EC run code to convert it
-
-        // spawn defensive politicians if one is lost? keep track of ID's and make sure all of them are here
-
-        // spawn scouting muckrakers and process them for info
-        if (turnCount % 3 == 0) {
-            spawnMuckrakers();
-        } else if (turnCount % 8 == 0 && turnCount > 200 && turnCount < 500 && enemyECLocs.size() != 0) {
-            spawnSlanderers(); // adjust flag for slanderers? direction?
-            isFlagUnimportant = false;
-        } else if (turnCount % 10 == 0) {
-            spawnPoliticians(); // politicians can chase slanderers if it sees them to defend
-        }
-
-        if (enemyECLocs.size() != numEnlightenmentCenters) {
-            processMuckrakers();
-        }
-
-        if (isFlagUnimportant) {
-            // put up our flag for politicians and (maybe? muckrakers) to use with a special code
-        }
+        spawnMuckrakers();
     }
 
     static void spawnPoliticians() throws GameActionException {
@@ -51,10 +25,8 @@ public class EC extends RobotPlayer {
 
     static void spawnSlanderers() throws GameActionException {
         // we can spawn it based on influence - 71 influence go one direction, 72 influence go another
-        if (rc.isReady()) {
-            Direction dirToGo = Util.getDirectionAway(enemyECLocs);
-            rc.buildRobot(RobotType.SLANDERER, getOpenDirection(), 1);
-        }
+        Direction dirToGo = Util.getDirectionAway(enemyECLocs);
+        rc.buildRobot(RobotType.SLANDERER, getOpenDirection(), 1);
 
         // communicate direction
 
@@ -66,13 +38,10 @@ public class EC extends RobotPlayer {
      * @throws GameActionException
      */
     static void spawnMuckrakers() throws GameActionException {
-        if (rc.isReady()) {
-            Direction dir = getOpenDirection();
-            if (spawnBot(RobotType.MUCKRAKER, dir, 1)) {
-                scoutID.add(rc.senseRobotAtLocation(rc.adjacentLocation(dir)).ID);
-            }
+        Direction dir = getOpenDirection();
+        if (spawnBot(RobotType.MUCKRAKER, dir, 1)) {
+            scoutID.add(rc.senseRobotAtLocation(rc.adjacentLocation(dir)).ID);
         }
-
     }
 
     /**
@@ -80,7 +49,7 @@ public class EC extends RobotPlayer {
      *
      * @throws GameActionException
      */
-    static void processMuckrakers () throws GameActionException {
+    static void processMuckrakers() throws GameActionException {
         for (int id : scoutID) {
             int curFlag = Util.tryGetFlag(id);
 

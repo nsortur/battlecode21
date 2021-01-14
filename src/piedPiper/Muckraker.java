@@ -11,6 +11,8 @@ public class Muckraker extends RobotPlayer{
     static MapLocation ecLoc;
     static final int actionRadius = rc.getType().actionRadiusSquared;
 
+    static Direction dir = Direction.NORTH;
+
     static void run() throws GameActionException {
         if (turnCount == 1) {
             ecID = Util.getECID();
@@ -21,6 +23,12 @@ public class Muckraker extends RobotPlayer{
         isCloseToEnemyEC();
 
         getDirectionAwayFromThings();
+
+        // if a certain type of muckraker?
+        // TODO: moving function needs work
+        if (!Util.tryMove(dir)) {
+            dir = Util.randomDirection();
+        }
     }
 
     /**
@@ -38,18 +46,20 @@ public class Muckraker extends RobotPlayer{
 
         // if there are none go random place
         if (robots.length == 0) {
-            Util.tryMove(Util.randomDirection());
+            dir = Util.randomDirection();
         } else if (dirOppEdge.size() != 0) {
-            Util.tryMove(dirOppEdge.get(new Random().nextInt(dirOppEdge.size())));
+            dir = dirOppEdge.get(new Random().nextInt(dirOppEdge.size()));
         } else {
-            // if there are some calculate best direction to avoid them
-            int indexSum = 0;
+            int closestDistance = robots[0].location.distanceSquaredTo(rc.getLocation());
+            RobotInfo closestRobot = robots[0];
             for (RobotInfo robot : robots) {
-                Direction dir = rc.getLocation().directionTo(robot.location);
-                indexSum += directionsList.indexOf(dir);
+                int dist = robot.location.distanceSquaredTo(rc.getLocation());
+                if (closestDistance > dist) {
+                    closestDistance = dist;
+                    closestRobot = robot;
+                }
             }
-            int averageIndex = indexSum / robots.length;
-            Util.tryMove(directions[(averageIndex + 4) % 8]);
+            dir = rc.getLocation().directionTo(closestRobot.location).opposite();
         }
     }
 
