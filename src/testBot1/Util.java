@@ -17,7 +17,7 @@ public class Util extends RobotPlayer {
      */
     static boolean spawnBot(RobotType type, Direction dir, int influence) throws GameActionException{
         if (!rc.getType().equals(RobotType.ENLIGHTENMENT_CENTER)){
-            System.out.println("not EC, trying to spawn from " + rc.getType());
+            // System.out.println("not EC, trying to spawn from " + rc.getType());
         }
         if (rc.canBuildRobot(type, dir, influence)) {
             rc.buildRobot(type, dir, influence);
@@ -243,67 +243,66 @@ public class Util extends RobotPlayer {
                 }
                 List keys = new ArrayList(possibleDirections.keySet());
                 Collections.sort(keys);
-                System.out.println("DirectionsList: " + directionsList);
-                System.out.println("Areas:" + areas);
-                System.out.println("Directions: " + possibleDirections);
-                System.out.println("Keys" + keys);
+                // System.out.println("DirectionsList: " + directionsList);
+                // System.out.println("Areas:" + areas);
+                // System.out.println("Directions: " + possibleDirections);
+                // System.out.println("Keys" + keys);
 
-                try{
-                    if(rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(2)))))){
-                        System.out.println("Moving to:" + rc.getLocation().directionTo(possibleDirections.get((keys.get(2)))));
-                        rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(2)))));
+                if(keys.size() == 3 && rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(2))))))
+                    rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(2)))));
+                else if (keys.size() == 2 && rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))))){
+                    if(rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))))){
+                        // System.out.println("Moving to:" + rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))));
+                        rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))));
                     }
                     else{
-                        if(rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))))){
-                            System.out.println("Moving to:" + rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))));
-                            rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))));
+                        if(rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))))){
+                            // System.out.println("Moving to:" + rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))));
+                            rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))));
                         }
                         else{
-                            if(rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))))){
-                                System.out.println("Moving to:" + rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))));
-                                rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))));
-                            }
-                            else{
-                                for (Direction value : directionsList) {
-                                    if (rc.canMove(value)) {
-                                        System.out.println("Moving to:" + value);
-                                        rc.move(value);
-                                    }
-                                    System.out.println("Cant move to:" + value);
+                            for (Direction value : directionsList) {
+                                if (rc.canMove(value)) {
+                                    // System.out.println("Moving to:" + value);
+                                    rc.move(value);
                                 }
+                                // System.out.println("Cant move to:" + value);
                             }
-                        }
-                    }
-                }
-                catch (Exception e){
-                    try{
-                        if(rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))))){
-                            System.out.println("Moving to:" + rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))));
-                            rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))));
-                        }
-                    }
-                    catch (Exception m){
-                        try{
-                            if(rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))))){
-                                System.out.println("Moving to:" + rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))));
-                                rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))));
-                            }
-                            else{ // if it is completely blocked off
-
-                            }
-                        }
-                        catch (Exception q){
-                            System.out.println("inner catch");
-                            System.out.println(q);
                         }
                     }
                 }
             }
-            System.out.println("Is not ready");
+
+            // System.out.println("Is not ready");
         } catch (Exception e) {
-            System.out.println("Outer catch");
+            // System.out.println("Outer catch");
             System.out.println(e);
         }
 
+    }
+
+    /**
+     * Gets absolute location from a decrypted flag
+     * Only works for EC
+     *
+     * @param decrypted the decrypted flag value
+     * @return the absolute map location
+     */
+    static MapLocation getLocFromDecrypt(int[] decrypted, MapLocation curLoc) {
+        return new MapLocation(curLoc.x + decrypted[0], curLoc.y + decrypted[1]);
+    }
+
+    /**
+     * Gets offsets from 2 locations
+     * @param curLoc current location
+     * @param newLoc new location
+     * @return the offsets
+     */
+
+    static int[] getOffsetFromEncrypt(MapLocation curLoc, MapLocation newLoc) {
+        int[] offsets = new int[2];
+        offsets[0] = newLoc.x - curLoc.x;
+        offsets[1] = newLoc.y - curLoc.y;
+        return offsets;
     }
 }
