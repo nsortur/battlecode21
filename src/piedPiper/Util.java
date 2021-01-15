@@ -284,5 +284,16 @@ public class Util extends RobotPlayer {
         return newLoc;
     }
 
+    /**
+     * Gets the offset from the current location and new loc
+     * Only works for EC
+     *
+     * @param curLoc current location of ec
+     * @param destLoc targetLocation
+     * @return the offsets
+     */
+    static int[] getOffsetsFromLoc(MapLocation curLoc, MapLocation destLoc) {
+        return new int[]{destLoc.x - curLoc.x, destLoc.y - curLoc.y};
+    }
 
 }
