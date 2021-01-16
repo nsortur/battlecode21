@@ -215,7 +215,6 @@ public class Util extends RobotPlayer {
         int averageIndex = indexSum / things.size();
         return directions[(averageIndex + 4) % 8];
     }
-
     /**
      * Uses the greedy algorithm to move to a location
      *
@@ -223,11 +222,10 @@ public class Util extends RobotPlayer {
      * @throws GameActionException
      */
     static void greedyPath(MapLocation target) throws GameActionException{
-        MapLocation loc = rc.getLocation();
-        if (loc.equals(target)){
+        if (rc.getLocation().equals(target)){
             return; // we have arrived at location
         }
-        Direction direction = loc.directionTo(target);
+        Direction direction = rc.getLocation().directionTo(target);
         try{
             if (rc.isReady()){
                 Hashtable<Integer, Direction> areas = new Hashtable<>();
@@ -236,32 +234,69 @@ public class Util extends RobotPlayer {
                 }
                 HashMap<Double, MapLocation> possibleDirections = new HashMap<>();
                 for (int i = 0; i < 3; i++) {
-                    possibleDirections.put(rc.sensePassability(loc.add(areas.get(i))), rc.getLocation().add(areas.get(i)));
+                    possibleDirections.put(rc.sensePassability(rc.getLocation().add(areas.get(i))), rc.getLocation().add(areas.get(i)));
                 }
                 List keys = new ArrayList(possibleDirections.keySet());
                 Collections.sort(keys);
+                System.out.println("DirectionsList: " + directionsList);
+                System.out.println("Areas:" + areas);
+                System.out.println("Directions: " + possibleDirections);
+                System.out.println("Keys" + keys);
 
-                if (keys.size() == 3 && tryMove(loc.directionTo(possibleDirections.get((keys.get(2)))))) {
-                    // worked
-                } else if (keys.size() == 2 && tryMove(loc.directionTo(possibleDirections.get((keys.get(1)))))) {
-                    if (tryMove(loc.directionTo(possibleDirections.get((keys.get(1)))))){
-                        // moved
-                    } else {
-                        if (tryMove(loc.directionTo(possibleDirections.get((keys.get(0)))))){
-                            // moved
+                try{
+                    if(rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(2)))))){
+                        System.out.println("Moving to:" + rc.getLocation().directionTo(possibleDirections.get((keys.get(2)))));
+                        rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(2)))));
+                    }
+                    else{
+                        if(rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))))){
+                            System.out.println("Moving to:" + rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))));
+                            rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))));
                         }
-                        else {
-                            for (Direction value : directionsList) {
-                                if (tryMove(value)) {
-                                    // moved
+                        else{
+                            if(rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))))){
+                                System.out.println("Moving to:" + rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))));
+                                rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))));
+                            }
+                            else{
+                                for (Direction value : directionsList) {
+                                    if (rc.canMove(value)) {
+                                        System.out.println("Moving to:" + value);
+                                        rc.move(value);
+                                    }
+                                    System.out.println("Cant move to:" + value);
                                 }
                             }
                         }
                     }
                 }
-            }
+                catch (Exception e){
+                    try{
+                        if(rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))))){
+                            System.out.println("Moving to:" + rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))));
+                            rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))));
+                        }
+                    }
+                    catch (Exception m){
+                        try{
+                            if(rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))))){
+                                System.out.println("Moving to:" + rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))));
+                                rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))));
+                            }
+                            else{ // if it is completely blocked off
 
+                            }
+                        }
+                        catch (Exception q){
+                            System.out.println("inner catch");
+                            System.out.println(q);
+                        }
+                    }
+                }
+            }
+            System.out.println("Is not ready");
         } catch (Exception e) {
+            System.out.println("Outer catch");
             System.out.println(e);
         }
 

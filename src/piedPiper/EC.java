@@ -3,15 +3,29 @@ package piedPiper;
 import battlecode.common.*;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+
+// TODO: my main problem
+// I don't know if the code stops when something has been spawned
+// so should i include code to make sure that i don't spawn two things at once?
+// and if it tries to spawn 2 things at once, do
+// if (!rc.canSpawnBot(... ){
+// Clock.yeild
+// }
+// Util.spawnBot(... )
 
 public class EC extends RobotPlayer {
     // The location of the enemy EC
     static HashSet<MapLocation> enemyECLocs = new HashSet<>();
+    static HashSet<MapLocation> neutralECLocs = new HashSet<>();
+
     static int numEnlightenmentCenters = 0;
 
     // ID's of the scout's
-    static HashSet<Integer> scoutID = new HashSet<>();
+    static LinkedHashSet<Integer> scoutID = new LinkedHashSet<>();
 
+    // TODO: Fix neutral EC bugs
+    static int numNeutralECPoliticiansDeployed = 0;
 
     static void run() throws GameActionException {
         boolean isFlagUnimportant = true;
@@ -27,6 +41,17 @@ public class EC extends RobotPlayer {
 
         // spawn defensive politicians if one is lost? keep track of ID's and make sure all of them are here
 
+
+         if (enemyECLocs.size() != numEnlightenmentCenters || numNeutralECPoliticiansDeployed < 4 && isFlagUnimportant) { // TODO: isFlagUnimportant?
+            processMuckrakers();
+            isFlagUnimportant = false;
+         }
+
+         if (neutralECLocs.size() != numNeutralECPoliticiansDeployed) {
+             // spawnNeutralPolitician();
+         }
+
+
         // spawn scouting muckrakers and process them for info
         if (turnCount % 3 == 0 && turnCount < 700) {
             spawnMuckrakers();
@@ -37,13 +62,22 @@ public class EC extends RobotPlayer {
             spawnPoliticians(); // politicians can chase slanderers if it sees them to defend
         }
 
-         if (enemyECLocs.size() != numEnlightenmentCenters && isFlagUnimportant) { // TODO: isFlagUnimportant?
-            processMuckrakers();
-            isFlagUnimportant = false;
-         }
+         System.out.println("There are " + neutralECLocs.size() + " neutral EC's found, and there are " + numNeutralECPoliticiansDeployed + " deployed.");
 
         if (isFlagUnimportant) {
             // put up our flag for politicians and (maybe? muckrakers) to use with a special code
+        }
+    }
+
+    static void spawnNeutralPolitician() throws GameActionException {
+        // TODO: fix this system - spawning endlessly
+        MapLocation lastLoc = neutralECLocs.iterator().next();
+        for (MapLocation loc : neutralECLocs) {
+            lastLoc = loc;
+        }
+        if (rc.getInfluence() > 0) {
+            spawnBotToLocation(lastLoc, 5, RobotType.POLITICIAN, 10);
+            numNeutralECPoliticiansDeployed += 1;
         }
     }
 
@@ -68,11 +102,10 @@ public class EC extends RobotPlayer {
      * @throws GameActionException
      */
     static void spawnMuckrakers() throws GameActionException {
-        if (rc.isReady()) {
-            Direction dir = getOpenDirection();
-            if (spawnBot(RobotType.MUCKRAKER, dir, 1)) {
-                scoutID.add(rc.senseRobotAtLocation(rc.adjacentLocation(dir)).ID);
-            }
+        Direction dir = getOpenDirection();
+        if (dir != null) {
+            spawnBot(RobotType.MUCKRAKER, dir, 1);
+            scoutID.add(rc.senseRobotAtLocation(rc.adjacentLocation(dir)).ID);
         }
 
     }
@@ -95,6 +128,8 @@ public class EC extends RobotPlayer {
                         enemyECLocs.add(Util.getLocFromDecrypt(flagInfo, rc.getLocation()));
                         break;
                     case 2:
+                        neutralECLocs.add(Util.getLocFromDecrypt(flagInfo, rc.getLocation()));
+                        spawnNeutralPolitician();
                         break; // capture neutral ec using flaginfo
                     default: break;
                 }
@@ -114,11 +149,14 @@ public class EC extends RobotPlayer {
      * @return true if spawned
      * @throws GameActionException
      */
-    static boolean spawnBot(RobotType type, Direction dir, int influence) throws GameActionException{
-        if (rc.canBuildRobot(type, dir, influence)) {
-            rc.buildRobot(type, dir, influence);
-            return true;
-        } else return false;
+
+    // TODO: Talk about spawn bot
+    static void spawnBot(RobotType type, Direction dir, int influence) throws GameActionException{
+        if (!rc.canBuildRobot(type, dir, influence) && rc.isReady()) {
+        } else {
+            Clock.yield();
+        }
+        rc.buildRobot(type, dir, influence);
     }
 
     /**
@@ -134,7 +172,7 @@ public class EC extends RobotPlayer {
                 return direction;
             }
         }
-        return Direction.NORTH;
+        return null;
     }
 
     /**
@@ -167,6 +205,37 @@ public class EC extends RobotPlayer {
      */
     static int spawnBotToLocation(int xOffset, int yOffset, int decryptCode, RobotType robotType, int influence) throws GameActionException {
         int flagToShow = Util.encryptOffsets(xOffset, yOffset, decryptCode);
+        if (Util.trySetFlag(flagToShow)) {
+            // spawn bot
+            Direction dir = getOpenDirection();
+            spawnBot(robotType, dir, influence);
+
+            // get ID
+            MapLocation polLoc = rc.adjacentLocation(dir);
+            RobotInfo rob = rc.senseRobotAtLocation(polLoc);
+            if (rob.team == rc.getTeam()) {
+                return rob.ID;
+            } else return -1;
+
+        } else {
+            throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Cannot set flag");
+        }
+    }
+
+    /**
+     * Spawns a bot that heads toward a given location by putting up a flag
+     *
+     * @param destLoc the location you want to go
+     * @param decryptCode the decryption code to use in the dictionary
+     * @param robotType the type of robot to spawn
+     * @param influence the influence you want to give this robot
+     *
+     * @return -1 if the EC is surrounded with enemy bots, otherwise the ID of unit spawned
+     */
+    static int spawnBotToLocation(MapLocation destLoc, int decryptCode, RobotType robotType, int influence) throws GameActionException {
+        int[] offsets = Util.getOffsetsFromLoc(rc.getLocation(), destLoc);
+        int flagToShow = Util.encryptOffsets(offsets[0], offsets[1], decryptCode);
+
         if (Util.trySetFlag(flagToShow)) {
             // spawn bot
             Direction dir = getOpenDirection();

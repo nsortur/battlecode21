@@ -11,6 +11,9 @@ import battlecode.common.*;
 // and only kill slanderers if it can, same with enlightenment centers, and maybe politicians as well? (flag code of 8)
 
 public class Politician extends RobotPlayer {
+    static final Team enemy = rc.getTeam().opponent();
+    static final int actionRadius = rc.getType().actionRadiusSquared;
+
     static int ecID; // only initialized if spawned from EC
     static MapLocation ecLoc; // only initialized if spawned from EC
 
@@ -28,9 +31,11 @@ public class Politician extends RobotPlayer {
             checkRole();
         }
 
+        System.out.println("ECLOC: " + ecLoc + " Target EC: " + targetLoc);
+
+
         if (convertPolitician) {
-            Util.greedyPath(targetLoc);
-            convertEC();
+            attackEnemyEC();
         }
 
     }
@@ -57,25 +62,31 @@ public class Politician extends RobotPlayer {
         }
     }
 
-    static void convertEC() throws GameActionException {
-        RobotInfo[] robots = rc.senseNearbyRobots();
-        for (RobotInfo robot : robots) {
-            if (robot.getType() == RobotType.ENLIGHTENMENT_CENTER && robot.team == rc.getTeam().opponent()) {
-                tryConvert();
-            }
-        }
-    }
+
+    // TODO: Greedy Path DOES NOT WORK
 
     /**
-     * Attempts to move in a given direction.
+     * Go towards enemy EC and kaboom
      *
-     * @return true if a move was performed
      * @throws GameActionException
      */
-    static boolean tryConvert() throws GameActionException {
-        if (rc.canEmpower(rc.getType().actionRadiusSquared)) {
-            rc.empower(rc.getType().actionRadiusSquared);
-            return true;
-        } else return false;
+    static void attackEnemyEC() throws GameActionException{
+        /**
+         * get location from ec arraylist
+         * calculate conviction to give (40% of EC conviction each for two politicians, 1% for a muckraker)
+         * destroyedEC stop attacking if it's destroyed
+         * if !destroyedEC, greedyMove to EC location while searching to empower if enlightenment center is seen
+         *      if rounds have been more than 50, spawn another army and send
+         * if destroyedEC, break and set attacking to false
+         */
+        Util.tryMove(rc.getLocation().directionTo(targetLoc));
+        // attack and raised killed flag if about to kill
+        RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, null);
+        for (RobotInfo robot : attackable) {
+            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && rc.canEmpower(actionRadius)) {
+                rc.empower(actionRadius);
+            }
+        }
+
     }
 }
