@@ -17,8 +17,10 @@ public class EC extends RobotPlayer {
     // ID's of the scout's
     static LinkedHashSet<Integer> scoutID = new LinkedHashSet<>();
 
+    // ID's of the politicians - [0] -> North [1] -> East [2] -> South [3] -> West
+    static int[] polID = new int[4];
+
     // TODO: Fix neutral EC bugs (Neel)
-    static int numNeutralECPoliticiansDeployed = 0;
 
     static void run() throws GameActionException {
         boolean isFlagUnimportant = true;
@@ -36,16 +38,16 @@ public class EC extends RobotPlayer {
         checkIfStillDefensePoliticians();
 
          if (enemyECLocs.size() != numEnlightenmentCenters && isFlagUnimportant) { // TODO: isFlagUnimportant?
-            processMuckrakers();
+            // processMuckrakers();
             isFlagUnimportant = false;
          }
 
 
         // spawn scouting muckrakers and process them for info
         if (turnCount % 5 == 0 && turnCount < 700) {
-            spawnMuckrakers();
+            // spawnMuckrakers();
         } else if (turnCount % 8 == 0 && turnCount > 50 && turnCount < 500 && enemyECLocs.size() != 0) {
-            spawnSlanderers(); // adjust flag for slanderers? direction?
+            // spawnSlanderers(); // adjust flag for slanderers? direction?
             isFlagUnimportant = false;
         } else if (turnCount % 10 == 0) {
             spawnPoliticians(); // politicians can chase slanderers if it sees them to defend
@@ -58,22 +60,24 @@ public class EC extends RobotPlayer {
     }
 
     static void checkIfStillDefensePoliticians() throws GameActionException {
-        ArrayList<MapLocation> locations = new ArrayList<>();
-        for (Direction dir : cardDirections) {
-            locations.add(rc.getLocation().add(dir).add(dir));
+        MapLocation[] locations = new MapLocation[4];
+        for (int i = 0; i < 4; i++) {
+            locations[i] = rc.getLocation().add(cardDirections[i]).add(cardDirections[i]);
+
         }
         boolean stillThere = true;
-        MapLocation toSpawn = null;
+        int index = 0;
 
-        for (MapLocation loc : locations) {
-            RobotInfo robot = rc.senseRobotAtLocation(loc);
-            if (robot == null || robot.type != RobotType.POLITICIAN || robot.team != rc.getTeam()) {
+        for (int id : polID) {
+            if (!rc.canSenseRobot(id)) {
                 stillThere = false;
-                toSpawn = loc;
+                break;
+            } else {
+                index += 1;
             }
         }
         if (!stillThere) {
-            spawnBotToLocation(toSpawn, 6, RobotType.POLITICIAN, 12);
+            polID[index] = spawnBotToLocation(locations[index], 6, RobotType.POLITICIAN, 12);
         }
     }
 
@@ -151,12 +155,13 @@ public class EC extends RobotPlayer {
      */
 
     // TODO: Talk about spawn bot
-    static void spawnBot(RobotType type, Direction dir, int influence) throws GameActionException{
+    static boolean spawnBot(RobotType type, Direction dir, int influence) throws GameActionException{
         if (rc.canBuildRobot(type, dir, influence) && rc.isReady()) {
+            rc.buildRobot(type, dir, influence);
+            return true;
         } else {
-            Clock.yield();
+            return false;
         }
-        rc.buildRobot(type, dir, influence);
 
     }
 
@@ -206,11 +211,15 @@ public class EC extends RobotPlayer {
      */
     static int spawnBotToLocation(int xOffset, int yOffset, int decryptCode, RobotType robotType, int influence) throws GameActionException {
         int flagToShow = Util.encryptOffsets(xOffset, yOffset, decryptCode);
-        if (Util.trySetFlag(flagToShow)) {
-            // spawn bot
-            Direction dir = getOpenDirection();
-            spawnBot(robotType, dir, influence);
+        Direction dir = getOpenDirection();
+        if (dir == null) {
+            Clock.yield();
+        }
+        while (!spawnBot(robotType, dir, influence)) {
+            Clock.yield();
+        }
 
+        if (Util.trySetFlag(flagToShow)) {
             // get ID
             MapLocation polLoc = rc.adjacentLocation(dir);
             RobotInfo rob = rc.senseRobotAtLocation(polLoc);
@@ -237,14 +246,15 @@ public class EC extends RobotPlayer {
         int[] offsets = Util.getOffsetsFromLoc(rc.getLocation(), destLoc);
         int flagToShow = Util.encryptOffsets(offsets[0], offsets[1], decryptCode);
 
-        if (Util.trySetFlag(flagToShow)) {
-            // spawn bot
-            Direction dir = getOpenDirection();
-            if (dir == null) {
-                Clock.yield();
-            }
-            spawnBot(robotType, dir, influence);
+        Direction dir = getOpenDirection();
+        if (dir == null) {
+            Clock.yield();
+        }
+        while (!spawnBot(robotType, dir, influence)) {
+            Clock.yield();
+        }
 
+        if (Util.trySetFlag(flagToShow)) {
             // get ID
             MapLocation polLoc = rc.adjacentLocation(dir);
             RobotInfo rob = rc.senseRobotAtLocation(polLoc);
