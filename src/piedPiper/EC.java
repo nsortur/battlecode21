@@ -33,19 +33,22 @@ public class EC extends RobotPlayer {
         }
 
         // if found neutral EC run code to convert it
+        if (neutralECLocs.size() != 0 && rc.getInfluence() > 500) {
+            spawnCapturePol();
+        }
 
         // spawn defensive politicians if one is lost? keep track of ID's and make sure all of them are here
-        checkIfStillDefensePoliticians();
+        // checkIfStillDefensePoliticians();
 
          if (enemyECLocs.size() != numEnlightenmentCenters && isFlagUnimportant) { // TODO: isFlagUnimportant?
-            // processMuckrakers();
+            processMuckrakers();
             isFlagUnimportant = false;
          }
 
 
         // spawn scouting muckrakers and process them for info
         if (turnCount % 5 == 0 && turnCount < 700) {
-            // spawnMuckrakers();
+            spawnMuckrakers();
         } else if (turnCount % 8 == 0 && turnCount > 50 && turnCount < 500 && enemyECLocs.size() != 0) {
             // spawnSlanderers(); // adjust flag for slanderers? direction?
             isFlagUnimportant = false;
@@ -112,6 +115,15 @@ public class EC extends RobotPlayer {
             scoutID.add(rc.senseRobotAtLocation(rc.adjacentLocation(dir)).ID);
         }
 
+    }
+
+    /**
+     * Spawns a politician to capture a neutral EC
+     *
+     * @throws GameActionException
+     */
+    static void spawnCapturePol() throws GameActionException {
+        spawnBotToLocation(neutralECLocs.iterator().next(), 8, RobotType.POLITICIAN, 500);
     }
 
     /**

@@ -20,6 +20,7 @@ public class Politician extends RobotPlayer {
     static MapLocation targetLoc;
 
     static boolean convertPolitician = false;
+    static boolean capturePolitician = false;
     static boolean defendPolitician = false;
     static boolean defendSlandererPolitician = false;
     static boolean otherPolitician = false;
@@ -47,6 +48,10 @@ public class Politician extends RobotPlayer {
             }
         }
 
+        if (capturePolitician) {
+            captureNeutralEC();
+        }
+
     }
 
     /**
@@ -66,6 +71,9 @@ public class Politician extends RobotPlayer {
         } else if (ecFlagInfo[2] == 7) {
             // defend slanderer role
             defendSlandererPolitician = true;
+        } else if (ecFlagInfo[2] == 8) {
+            capturePolitician = true;
+            targetLoc = Util.getLocFromDecrypt(ecFlagInfo, ecLoc);
         } else {
             otherPolitician = true;
         }
@@ -98,5 +106,29 @@ public class Politician extends RobotPlayer {
             }
         }
 
+    }
+
+    static void captureNeutralEC () throws GameActionException{
+        System.out.println("Going to: " + targetLoc);
+        Util.greedyPath(targetLoc);
+        //moveNaive(targetLoc);
+        // sense the EC if it's close
+        RobotInfo[] closeEC = rc.senseNearbyRobots(2, Team.NEUTRAL);
+        if (closeEC.length != 0 && rc.canEmpower(2)) {
+            rc.empower(500);
+        }
+    }
+
+    static boolean moveNaive(MapLocation dest) throws GameActionException{
+        MapLocation curLoc = rc.getLocation();
+
+        if (!curLoc.equals(dest)){
+            Direction toDest = curLoc.directionTo(dest);
+            if (rc.canMove(toDest) && rc.isReady()) {
+                rc.move(toDest);
+            }
+            return false;
+
+        } else return true;
     }
 }
