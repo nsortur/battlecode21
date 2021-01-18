@@ -42,15 +42,9 @@ public class Politician extends RobotPlayer {
 
         if (defendPolitician) {
             System.out.println("My target LOC is " + targetLoc);
-            try{
-                Util.greedyPath(targetLoc);
-            }
-            catch(Exception e){
-                System.out.print("There was a problem ");
-                System.out.println(e);
-            }
+            Util.greedyPath(targetLoc);
+            defendTheEC();
         }
-
 
     }
 
@@ -79,9 +73,11 @@ public class Politician extends RobotPlayer {
         }
     }
 
+
+    // TODO: Greedy Path DOES NOT WORK
+
     /**
      * Go towards enemy EC and kaboom
-     * // todo: attack multiple or only one enemy per EC?
      *
      * @throws GameActionException
      */
@@ -98,5 +94,10 @@ public class Politician extends RobotPlayer {
 
     }
 
-
+    static void defendTheEC() throws GameActionException {
+        RobotInfo[] robots = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
+        if (robots.length > 6) {
+            rc.empower(rc.getType().actionRadiusSquared);
+        }
+    }
 }
