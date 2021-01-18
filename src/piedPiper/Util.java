@@ -224,58 +224,78 @@ public class Util extends RobotPlayer {
      * @param target location to go to
      * @throws GameActionException
      */
-    static void greedyPath(MapLocation target) throws GameActionException{
-        if (rc.getLocation().equals(target)){
+    static void greedyPath(MapLocation target) throws GameActionException {
+        MapLocation loc = rc.getLocation();
+        if (loc.equals(target)){
             return; // we have arrived at location
         }
-        Direction direction = rc.getLocation().directionTo(target);
-        try{
-            if (rc.isReady()){
+        Direction direction = loc.directionTo(target);
+        try {
+            if (rc.isReady()) {
                 Hashtable<Integer, Direction> areas = new Hashtable<>();
                 for (int i = 0; i < 3; i++) {
                     areas.put(i, directionsList.get(Math.abs((directionsList.indexOf(direction) - 1 + i) % directionsList.size())));
                 }
                 HashMap<Double, MapLocation> possibleDirections = new HashMap<>();
                 for (int i = 0; i < 3; i++) {
-                    possibleDirections.put(rc.sensePassability(rc.getLocation().add(areas.get(i))), rc.getLocation().add(areas.get(i)));
+                    if (rc.onTheMap(rc.getLocation().add(areas.get(i)))){
+
+                        possibleDirections.put(rc.sensePassability(loc.add(areas.get(i))), loc.add(areas.get(i)));
+                    }
                 }
                 List keys = new ArrayList(possibleDirections.keySet());
                 Collections.sort(keys);
-                // System.out.println("DirectionsList: " + directionsList);
-                // System.out.println("Areas:" + areas);
-                // System.out.println("Directions: " + possibleDirections);
-                // System.out.println("Keys" + keys);
 
-                if(keys.size() == 3 && rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(2))))))
-                    rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(2)))));
-                else if (keys.size() == 2 && rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))))){
-                    if(rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))))){
-                        // System.out.println("Moving to:" + rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))));
-                        rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))));
-                    }
-                    else{
-                        if(rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))))){
-                            // System.out.println("Moving to:" + rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))));
-                            rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))));
-                        }
-                        else{
-                            for (Direction value : directionsList) {
-                                if (rc.canMove(value)) {
-                                    // System.out.println("Moving to:" + value);
-                                    rc.move(value);
-                                }
-                                // System.out.println("Cant move to:" + value);
+                try {
+                    MapLocation loc1 = possibleDirections.get(keys.get(2));
+                    Direction posDir1 = loc.directionTo(loc1);
+
+                    MapLocation loc2 = possibleDirections.get(keys.get(1));
+                    Direction posDir2 = loc.directionTo(loc2);
+
+                    MapLocation loc3 = possibleDirections.get(keys.get(0));
+                    Direction posDir3 = loc.directionTo(loc3);
+
+                    if (tryMove(posDir1)) {
+                        // you moved!
+                    } else if (tryMove(posDir2)) {
+                        // you moved there!
+                    } else if (tryMove(posDir3)) {
+                        // you moved here!
+                    } else {
+                        for (Direction value : directionsList) {
+                            if (rc.canMove(value)) {
+                                rc.move(value);
                             }
+                        }
+                    }
+                } catch (Exception q) {
+                    try {
+                        MapLocation loc2 = possibleDirections.get(keys.get(1));
+                        Direction posDir2 = loc.directionTo(loc2);
+
+                        if (tryMove(posDir2)) {
+                            // moved
+                        }
+                    } catch (Exception m) {
+                        try {
+                            MapLocation loc3 = possibleDirections.get(keys.get(0));
+                            Direction posDir3 = loc.directionTo(loc3);
+
+                            if (tryMove(posDir3)) {
+                                // moved
+                            } else {
+                                // blocked off
+                            }
+
+                        } catch (Exception v) {
+                            // inner catch
                         }
                     }
                 }
             }
-
-            // System.out.println("Is not ready");
         } catch (Exception e) {
-            // System.out.println("Outer catch");
-            System.out.println("Line 277 in Util");
-            System.out.println(e);
+            // outer error
         }
 
     }

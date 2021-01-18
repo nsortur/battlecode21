@@ -34,7 +34,10 @@ public class Politician extends RobotPlayer {
         }
 
         if (convertPolitician) {
-            attackEnemyEC();
+            attackEC(enemy);
+        }
+        if (capturePolitician) {
+            attackEC(Team.NEUTRAL);
         }
 
         if (defendPolitician) {
@@ -48,9 +51,6 @@ public class Politician extends RobotPlayer {
             }
         }
 
-        if (capturePolitician) {
-            captureNeutralEC();
-        }
 
     }
 
@@ -79,56 +79,24 @@ public class Politician extends RobotPlayer {
         }
     }
 
-
-    // TODO: Greedy Path DOES NOT WORK
-
     /**
      * Go towards enemy EC and kaboom
+     * // todo: attack multiple or only one enemy per EC?
      *
      * @throws GameActionException
      */
-    static void attackEnemyEC() throws GameActionException{
-        /**
-         * get location from ec arraylist
-         * calculate conviction to give (40% of EC conviction each for two politicians, 1% for a muckraker)
-         * destroyedEC stop attacking if it's destroyed
-         * if !destroyedEC, greedyMove to EC location while searching to empower if enlightenment center is seen
-         *      if rounds have been more than 50, spawn another army and send
-         * if destroyedEC, break and set attacking to false
-         */
-        System.out.println("Going to: " + targetLoc);
-        Util.greedyPath(targetLoc);
-        // attack and raised killed flag if about to kill
-        RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, null);
+    static void attackEC(Team team) throws GameActionException {
+
+        RobotInfo[] attackable = rc.senseNearbyRobots(2, team);
         for (RobotInfo robot : attackable) {
-            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && rc.canEmpower(actionRadius)) {
-                rc.empower(actionRadius);
+            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && rc.canEmpower(2)) {
+                rc.empower(2);
             }
         }
-
-    }
-
-    static void captureNeutralEC () throws GameActionException{
         System.out.println("Going to: " + targetLoc);
         Util.greedyPath(targetLoc);
-        //moveNaive(targetLoc);
-        // sense the EC if it's close
-        RobotInfo[] closeEC = rc.senseNearbyRobots(2, Team.NEUTRAL);
-        if (closeEC.length != 0 && rc.canEmpower(2)) {
-            rc.empower(500);
-        }
+
     }
 
-    static boolean moveNaive(MapLocation dest) throws GameActionException{
-        MapLocation curLoc = rc.getLocation();
 
-        if (!curLoc.equals(dest)){
-            Direction toDest = curLoc.directionTo(dest);
-            if (rc.canMove(toDest) && rc.isReady()) {
-                rc.move(toDest);
-            }
-            return false;
-
-        } else return true;
-    }
 }

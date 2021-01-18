@@ -33,8 +33,8 @@ public class EC extends RobotPlayer {
         }
 
         // if found neutral EC run code to convert it
-        if (neutralECLocs.size() != 0 && rc.getInfluence() > 500) {
-            spawnCapturePol();
+        if (neutralECLocs.size() != 0 && rc.getInfluence() > 512) {
+            spawnCapturePols();
         }
 
         // spawn defensive politicians if one is lost? keep track of ID's and make sure all of them are here
@@ -122,8 +122,11 @@ public class EC extends RobotPlayer {
      *
      * @throws GameActionException
      */
-    static void spawnCapturePol() throws GameActionException {
-        spawnBotToLocation(neutralECLocs.iterator().next(), 8, RobotType.POLITICIAN, 500);
+    static void spawnCapturePols() throws GameActionException {
+        MapLocation neutralLoc = neutralECLocs.iterator().next();
+        spawnBotToLocation(neutralLoc, 8, RobotType.POLITICIAN, 12);
+        spawnBotToLocation(neutralLoc, 8, RobotType.POLITICIAN, 500);
+        neutralECLocs.remove(neutralLoc);
     }
 
     /**
