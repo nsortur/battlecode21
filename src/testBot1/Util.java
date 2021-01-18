@@ -17,7 +17,7 @@ public class Util extends RobotPlayer {
      */
     static boolean spawnBot(RobotType type, Direction dir, int influence) throws GameActionException{
         if (!rc.getType().equals(RobotType.ENLIGHTENMENT_CENTER)){
-            System.out.println("not EC, trying to spawn from " + rc.getType());
+            // System.out.println("not EC, trying to spawn from " + rc.getType());
         }
         if (rc.canBuildRobot(type, dir, influence)) {
             rc.buildRobot(type, dir, influence);
@@ -78,7 +78,11 @@ public class Util extends RobotPlayer {
         } else return false;
     }
 
-
+    static void getNumEC() {
+        numEnlightenmentCenters = 3;
+        // check flag - if it says number of ec's return that
+        // if it does not then equal it to robot count (since this needs to happen immediately)
+    }
 
     /**
      * Sets a flag
@@ -122,42 +126,8 @@ public class Util extends RobotPlayer {
                 return robot.ID;
             }
         }
-        throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "can't get ECID");
+        throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "No enlightenment center");
     }
-
-    /**
-     * Checks if our EC in area
-     *
-     * @return true if there is an EC
-     * @throws GameActionException
-     */
-
-    static boolean isFriendlyECNear() {
-        RobotInfo[] robots = rc.senseNearbyRobots();
-        for (RobotInfo robot : robots) {
-            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && robot.team == rc.getTeam()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Gets location of friendly EC
-     *
-     * @return location of friendly ec, provided there is one
-     * @throws GameActionException if out of range
-     */
-    static MapLocation locationOfFriendlyEC() throws GameActionException {
-        RobotInfo[] robots = rc.senseNearbyRobots();
-        for (RobotInfo robot : robots) {
-            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && robot.team == rc.getTeam()) {
-                return robot.location;
-            }
-        }
-        throw new GameActionException(GameActionExceptionType.OUT_OF_RANGE, "out of range of our ec");
-    }
-
 
     // preceding "1" bit means positive, "2" means negative
     // valid coordinate codes can range from from 264264 (-64, -64) 100100 (0, 0) to 164164 (64, 64)
@@ -256,156 +226,57 @@ public class Util extends RobotPlayer {
      * @param target location to go to
      * @throws GameActionException
      */
-    static void greedyPath(MapLocation target) throws GameActionException {
-        MapLocation loc = rc.getLocation();
-        if (loc.equals(target)){
+    static void greedyPath(MapLocation target) throws GameActionException{
+        if (rc.getLocation().equals(target)){
             return; // we have arrived at location
         }
-        Direction direction = loc.directionTo(target);
-        try {
-            if (rc.isReady()) {
+        Direction direction = rc.getLocation().directionTo(target);
+        try{
+            if (rc.isReady()){
                 Hashtable<Integer, Direction> areas = new Hashtable<>();
                 for (int i = 0; i < 3; i++) {
                     areas.put(i, directionsList.get(Math.abs((directionsList.indexOf(direction) - 1 + i) % directionsList.size())));
                 }
                 HashMap<Double, MapLocation> possibleDirections = new HashMap<>();
                 for (int i = 0; i < 3; i++) {
-                    possibleDirections.put(rc.sensePassability(loc.add(areas.get(i))), loc.add(areas.get(i)));
+                    possibleDirections.put(rc.sensePassability(rc.getLocation().add(areas.get(i))), rc.getLocation().add(areas.get(i)));
                 }
                 List keys = new ArrayList(possibleDirections.keySet());
                 Collections.sort(keys);
+                // System.out.println("DirectionsList: " + directionsList);
+                // System.out.println("Areas:" + areas);
+                // System.out.println("Directions: " + possibleDirections);
+                // System.out.println("Keys" + keys);
 
-                try {
-                    MapLocation loc1 = possibleDirections.get(keys.get(2));
-                    Direction posDir1 = loc.directionTo(loc1);
-
-                    MapLocation loc2 = possibleDirections.get(keys.get(1));
-                    Direction posDir2 = loc.directionTo(loc2);
-
-                    MapLocation loc3 = possibleDirections.get(keys.get(0));
-                    Direction posDir3 = loc.directionTo(loc3);
-
-                    if (tryMove(posDir1)) {
-                        // you moved!
-                    } else if (tryMove(posDir2)) {
-                        // you moved there!
-                    } else if (tryMove(posDir3)) {
-                        // you moved here!
-                    } else {
-                        for (Direction value : directionsList) {
-                            if (rc.canMove(value)) {
-                                rc.move(value);
-                            }
-                        }
+                if(keys.size() == 3 && rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(2))))))
+                    rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(2)))));
+                else if (keys.size() == 2 && rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))))){
+                    if(rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))))){
+                        // System.out.println("Moving to:" + rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))));
+                        rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(1)))));
                     }
-                } catch (Exception q) {
-                    try {
-                        MapLocation loc2 = possibleDirections.get(keys.get(1));
-                        Direction posDir2 = loc.directionTo(loc2);
-
-                        if (tryMove(posDir2)) {
-                            // moved
+                    else{
+                        if(rc.canMove(rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))))){
+                            // System.out.println("Moving to:" + rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))));
+                            rc.move(rc.getLocation().directionTo(possibleDirections.get((keys.get(0)))));
                         }
-                    } catch (Exception m) {
-                        try {
-                            MapLocation loc3 = possibleDirections.get(keys.get(0));
-                            Direction posDir3 = loc.directionTo(loc3);
-
-                            if (tryMove(posDir3)) {
-                                // moved
-                            } else {
-                                // blocked off
+                        else{
+                            for (Direction value : directionsList) {
+                                if (rc.canMove(value)) {
+                                    // System.out.println("Moving to:" + value);
+                                    rc.move(value);
+                                }
+                                // System.out.println("Cant move to:" + value);
                             }
-
-                        } catch (Exception v) {
-                            // inner catch
                         }
                     }
                 }
             }
+
+            // System.out.println("Is not ready");
         } catch (Exception e) {
-            // outer error
-        }
-
-    }
-
-    /**
-     * Uses the greedy algorithm to move to a location, but avoids the map location in the radius given
-     *
-     * @param target location to go to
-     * @param avoid location to avoid
-     * @param radius radius to avoid in
-     * @throws GameActionException
-     */
-    static void greedyPathAndAvoid(MapLocation target, MapLocation avoid, int radius) throws GameActionException {
-        MapLocation loc = rc.getLocation();
-        if (loc.equals(target)){
-            return; // we have arrived at location
-        }
-        Direction direction = loc.directionTo(target);
-        try {
-            if (rc.isReady()) {
-                Hashtable<Integer, Direction> areas = new Hashtable<>();
-                for (int i = 0; i < 3; i++) {
-                    areas.put(i, directionsList.get(Math.abs((directionsList.indexOf(direction) - 1 + i) % directionsList.size())));
-                }
-                HashMap<Double, MapLocation> possibleDirections = new HashMap<>();
-                for (int i = 0; i < 3; i++) {
-                    possibleDirections.put(rc.sensePassability(loc.add(areas.get(i))), loc.add(areas.get(i)));
-                }
-                List keys = new ArrayList(possibleDirections.keySet());
-                Collections.sort(keys);
-
-                try {
-                    MapLocation loc1 = possibleDirections.get(keys.get(2));
-                    Direction posDir1 = loc.directionTo(loc1);
-
-                    MapLocation loc2 = possibleDirections.get(keys.get(1));
-                    Direction posDir2 = loc.directionTo(loc2);
-
-                    MapLocation loc3 = possibleDirections.get(keys.get(0));
-                    Direction posDir3 = loc.directionTo(loc3);
-
-                    if ((tryMove(posDir1)) && loc.isWithinDistanceSquared(loc.add(posDir1), radius)) {
-                        // you moved!
-                    } else if ((tryMove(posDir2)) && loc.isWithinDistanceSquared(loc.add(posDir2), radius)) {
-                        // you moved there!
-                    } else if ((tryMove(posDir3)) && loc.isWithinDistanceSquared(loc.add(posDir3), radius)) {
-                        // you moved here!
-                    } else {
-                        for (Direction value : directionsList) {
-                            if (rc.canMove(value)) {
-                                rc.move(value);
-                            }
-                        }
-                    }
-                } catch (Exception q) {
-                    try {
-                        MapLocation loc2 = possibleDirections.get(keys.get(1));
-                        Direction posDir2 = loc.directionTo(loc2);
-
-                        if ((tryMove(posDir2)) && loc.isWithinDistanceSquared(loc.add(posDir2), radius)) {
-                            // moved
-                        }
-                    } catch (Exception m) {
-                        try {
-                            MapLocation loc3 = possibleDirections.get(keys.get(0));
-                            Direction posDir3 = loc.directionTo(loc3);
-
-                            if ((tryMove(posDir3)) && loc.isWithinDistanceSquared(loc.add(posDir3), radius)) {
-                                // moved
-                            } else {
-                                // blocked off
-                            }
-
-                        } catch (Exception v) {
-                            // inner catch
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            // outer error
+            // System.out.println("Outer catch");
+            System.out.println(e);
         }
 
     }
@@ -422,63 +293,16 @@ public class Util extends RobotPlayer {
     }
 
     /**
-     * Gets the offset from the current location and new loc
-     * Only works for EC
-     *
-     * @param curLoc current location of ec
-     * @param destLoc targetLocation
+     * Gets offsets from 2 locations
+     * @param curLoc current location
+     * @param newLoc new location
      * @return the offsets
      */
-    static int[] getOffsetsFromLoc(MapLocation curLoc, MapLocation destLoc) {
-        return new int[]{destLoc.x - curLoc.x, destLoc.y - curLoc.y};
+
+    static int[] getOffsetFromEncrypt(MapLocation curLoc, MapLocation newLoc) {
+        int[] offsets = new int[2];
+        offsets[0] = newLoc.x - curLoc.x;
+        offsets[1] = newLoc.y - curLoc.y;
+        return offsets;
     }
-
-    /**
-     * Calculates a new location in the direction you want based on how many tiles
-     *
-     * @param dir the direction you want to go
-     * @param numMove number of tiles you want to go in that direction
-     * @param loc location you want to go to
-     * @return
-     */
-    static MapLocation calculateNewLocationWithDirection(Direction dir, int numMove, MapLocation loc) {
-        MapLocation newLoc = loc;
-        for (int i = 0; i < numMove; i++) {
-            newLoc = newLoc.add(dir);
-        }
-        return newLoc;
-    }
-
-    /**
-     * Calculates direction scout needs to move in
-     *
-     * @return a direction
-     * @throws GameActionException
-     */
-
-    static Direction getScoutDirection(int ecID) throws GameActionException {
-        int ecFlag = Util.tryGetFlag(ecID);
-
-        switch (ecFlag) {
-            case 11:
-                return Direction.NORTH;
-            case 12:
-                return Direction.NORTHEAST;
-            case 13:
-                return Direction.EAST;
-            case 14:
-                return Direction.SOUTHEAST;
-            case 15:
-                return Direction.SOUTH;
-            case 16:
-                return Direction.SOUTHWEST;
-            case 17:
-                return Direction.WEST;
-            case 18:
-                return Direction.NORTHWEST;
-            default:
-                throw new IllegalStateException("Unexpected value: " + ecFlag);
-        }
-    }
-
 }
