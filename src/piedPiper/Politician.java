@@ -29,10 +29,16 @@ public class Politician extends RobotPlayer {
             ecID = Util.getECID();
             ecLoc = Util.locationOfFriendlyEC();
             checkRole();
+            System.out.println("the flag i put out was to: " + targetLoc + " on turn " + turnCount);
         }
 
         if (convertPolitician) {
             attackEnemyEC();
+        }
+
+        if (defendPolitician) {
+            System.out.println("My target LOC is " + targetLoc);
+            Util.greedyPath(targetLoc);
         }
 
     }
@@ -49,7 +55,7 @@ public class Politician extends RobotPlayer {
             convertPolitician = true;
             targetLoc = Util.getLocFromDecrypt(ecFlagInfo, ecLoc);
         } else if (ecFlagInfo[2] == 6) {
-            // defend role
+            targetLoc = Util.getLocFromDecrypt(ecFlagInfo, ecLoc);
             defendPolitician = true;
         } else if (ecFlagInfo[2] == 7) {
             // defend slanderer role

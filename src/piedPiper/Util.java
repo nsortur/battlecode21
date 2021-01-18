@@ -123,6 +123,7 @@ public class Util extends RobotPlayer {
         return decrypted;
     }
 
+
     /**
      * Encrypts x and y offsets into a flag value
      *
