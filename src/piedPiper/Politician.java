@@ -2,6 +2,8 @@ package piedPiper;
 
 import battlecode.common.*;
 
+import java.util.Random;
+
 // 4 Types of Politcians
 // 1. Convert Politicians - given a location - go there and convert (flag code of 5)
 // 2. Defend Politicians - given a location, and must defend (flag code of 6)
@@ -44,6 +46,19 @@ public class Politician extends RobotPlayer {
             System.out.println("My target LOC is " + targetLoc);
             Util.greedyPath(targetLoc);
             defendTheEC();
+        }
+        if (otherPolitician){
+            RobotInfo[] attackable = rc.senseNearbyRobots();
+            int actionRadius = rc.getType().actionRadiusSquared;
+            for (RobotInfo robot : attackable) {
+                if (robot.team != rc.getTeam().opponent()) {
+                    rc.empower(actionRadius);
+                }
+            }
+
+            Random rand = new Random();
+            Direction go = directionsList.get(rand.nextInt(8));
+            if (rc.canMove(go)) rc.move(go);
         }
 
     }

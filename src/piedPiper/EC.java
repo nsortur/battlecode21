@@ -2,9 +2,7 @@ package piedPiper;
 
 import battlecode.common.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.*;
 
 
 public class EC extends RobotPlayer {
@@ -13,7 +11,7 @@ public class EC extends RobotPlayer {
     static HashSet<MapLocation> neutralECLocs = new HashSet<>();
 
     static int numEnlightenmentCenters = 0;
-
+    static double bidding = 0.1;
     // ID's of the scout's
     static LinkedHashSet<Integer> scoutID = new LinkedHashSet<>();
 
@@ -62,6 +60,12 @@ public class EC extends RobotPlayer {
         if (isFlagUnimportant) {
             // put up our flag for politicians and (maybe? muckrakers) to use with a special code
         }
+
+        if (rc.getRoundNum() > 200){
+            rc.bid((int) (rc.getInfluence() * bidding));
+            bidding += .0001;
+        }
+
     }
 
     static void checkIfStillDefensePoliticians() throws GameActionException {
