@@ -2,17 +2,10 @@ package piedPiper;
 
 import battlecode.common.*;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 
-// TODO: my main problem
-// I don't know if the code stops when something has been spawned
-// so should i include code to make sure that i don't spawn two things at once?
-// and if it tries to spawn 2 things at once, do
-// if (!rc.canSpawnBot(... ){
-// Clock.yeild
-// }
-// Util.spawnBot(... )
 
 public class EC extends RobotPlayer {
     // The location of the enemy EC
@@ -24,7 +17,7 @@ public class EC extends RobotPlayer {
     // ID's of the scout's
     static LinkedHashSet<Integer> scoutID = new LinkedHashSet<>();
 
-    // TODO: Fix neutral EC bugs
+    // TODO: Fix neutral EC bugs (Neel)
     static int numNeutralECPoliticiansDeployed = 0;
 
     static void run() throws GameActionException {
@@ -40,57 +33,64 @@ public class EC extends RobotPlayer {
         // if found neutral EC run code to convert it
 
         // spawn defensive politicians if one is lost? keep track of ID's and make sure all of them are here
+        checkIfStillDefensePoliticians();
 
-
-         if (enemyECLocs.size() != numEnlightenmentCenters || numNeutralECPoliticiansDeployed < 4 && isFlagUnimportant) { // TODO: isFlagUnimportant?
+         if (enemyECLocs.size() != numEnlightenmentCenters && isFlagUnimportant) { // TODO: isFlagUnimportant?
             processMuckrakers();
             isFlagUnimportant = false;
          }
 
-         if (neutralECLocs.size() != numNeutralECPoliticiansDeployed) {
-             // spawnNeutralPolitician();
-         }
-
 
         // spawn scouting muckrakers and process them for info
-        if (turnCount % 3 == 0 && turnCount < 700) {
+        if (turnCount % 5 == 0 && turnCount < 700) {
             spawnMuckrakers();
         } else if (turnCount % 8 == 0 && turnCount > 50 && turnCount < 500 && enemyECLocs.size() != 0) {
-            // spawnSlanderers(); // adjust flag for slanderers? direction?
+            spawnSlanderers(); // adjust flag for slanderers? direction?
             isFlagUnimportant = false;
         } else if (turnCount % 10 == 0) {
             spawnPoliticians(); // politicians can chase slanderers if it sees them to defend
         }
 
-         System.out.println("There are " + neutralECLocs.size() + " neutral EC's found, and there are " + numNeutralECPoliticiansDeployed + " deployed.");
 
         if (isFlagUnimportant) {
             // put up our flag for politicians and (maybe? muckrakers) to use with a special code
         }
     }
 
-    static void spawnNeutralPolitician() throws GameActionException {
-        // TODO: fix this system - spawning endlessly
-        MapLocation lastLoc = neutralECLocs.iterator().next();
-        for (MapLocation loc : neutralECLocs) {
-            lastLoc = loc;
+    static void checkIfStillDefensePoliticians() throws GameActionException {
+        ArrayList<MapLocation> locations = new ArrayList<>();
+        for (Direction dir : cardDirections) {
+            locations.add(rc.getLocation().add(dir).add(dir));
         }
-        if (rc.getInfluence() > 0) {
-            spawnBotToLocation(lastLoc, 5, RobotType.POLITICIAN, 10);
-            numNeutralECPoliticiansDeployed += 1;
+        boolean stillThere = true;
+        MapLocation toSpawn = null;
+
+        for (MapLocation loc : locations) {
+            RobotInfo robot = rc.senseRobotAtLocation(loc);
+            if (robot == null || robot.type != RobotType.POLITICIAN || robot.team != rc.getTeam()) {
+                stillThere = false;
+                toSpawn = loc;
+            }
+        }
+        if (!stillThere) {
+            spawnBotToLocation(toSpawn, 6, RobotType.POLITICIAN, 12);
         }
     }
+
 
     static void spawnPoliticians() throws GameActionException {
 
     }
 
+    /**
+     * Spawns slanderers
+     *
+     * @throws GameActionException
+     */
+
     static void spawnSlanderers() throws GameActionException {
         // we can spawn it based on influence - 71 influence go one direction, 72 influence go another
-        if (rc.isReady()) {
-            Direction dirToGo = getOpenDirection();
-            rc.buildRobot(RobotType.SLANDERER, dirToGo, 1);
-        }
+        spawnBotToLocation(enemyECLocs.iterator().next(), 4, RobotType.SLANDERER, 40); // TODO: influence
 
         // communicate direction
 
@@ -129,7 +129,7 @@ public class EC extends RobotPlayer {
                         break;
                     case 2:
                         neutralECLocs.add(Util.getLocFromDecrypt(flagInfo, rc.getLocation()));
-                        spawnNeutralPolitician();
+                        // spawnNeutralPolitician();
                         break; // capture neutral ec using flaginfo
                     default: break;
                 }
@@ -152,11 +152,12 @@ public class EC extends RobotPlayer {
 
     // TODO: Talk about spawn bot
     static void spawnBot(RobotType type, Direction dir, int influence) throws GameActionException{
-        if (!rc.canBuildRobot(type, dir, influence) && rc.isReady()) {
+        if (rc.canBuildRobot(type, dir, influence) && rc.isReady()) {
         } else {
             Clock.yield();
         }
         rc.buildRobot(type, dir, influence);
+
     }
 
     /**
@@ -239,6 +240,9 @@ public class EC extends RobotPlayer {
         if (Util.trySetFlag(flagToShow)) {
             // spawn bot
             Direction dir = getOpenDirection();
+            if (dir == null) {
+                Clock.yield();
+            }
             spawnBot(robotType, dir, influence);
 
             // get ID

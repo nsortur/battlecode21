@@ -31,9 +31,6 @@ public class Politician extends RobotPlayer {
             checkRole();
         }
 
-        System.out.println("ECLOC: " + ecLoc + " Target EC: " + targetLoc);
-
-
         if (convertPolitician) {
             attackEnemyEC();
         }
@@ -79,7 +76,8 @@ public class Politician extends RobotPlayer {
          *      if rounds have been more than 50, spawn another army and send
          * if destroyedEC, break and set attacking to false
          */
-        Util.tryMove(rc.getLocation().directionTo(targetLoc));
+        System.out.println("Going to: " + targetLoc);
+        Util.greedyPath(targetLoc);
         // attack and raised killed flag if about to kill
         RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, null);
         for (RobotInfo robot : attackable) {
