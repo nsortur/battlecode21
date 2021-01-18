@@ -39,6 +39,7 @@ public class Politician extends RobotPlayer {
         if (defendPolitician) {
             System.out.println("My target LOC is " + targetLoc);
             Util.greedyPath(targetLoc);
+            defendTheEC();
         }
 
     }
@@ -92,5 +93,12 @@ public class Politician extends RobotPlayer {
             }
         }
 
+    }
+
+    static void defendTheEC() throws GameActionException {
+        RobotInfo[] robots = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
+        if (robots.length > 6) {
+            rc.empower(rc.getType().actionRadiusSquared);
+        }
     }
 }

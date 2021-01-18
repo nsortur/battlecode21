@@ -37,6 +37,8 @@ public class Muckraker extends RobotPlayer{
     // TODO: Bugs with algorithm
     // 1 - not exploring well enough, not separating
     // 2 - crowding team EC
+
+
     static void moveAway() throws GameActionException {
         RobotInfo[] robots = rc.senseNearbyRobots(2, rc.getTeam());
         ArrayList<RobotInfo> robotsExceptEC = new ArrayList<>();
