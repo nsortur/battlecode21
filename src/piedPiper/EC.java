@@ -33,21 +33,26 @@ public class EC extends RobotPlayer {
         }
 
         // if found neutral EC run code to convert it
+        if (neutralECLocs.size() != 0 && rc.getInfluence() > 512) {
+            spawnCapturePols();
+        }
 
         // spawn defensive politicians if one is lost? keep track of ID's and make sure all of them are here
-        checkIfStillDefensePoliticians();
+        if (turnCount > 20) {
+            checkIfStillDefensePoliticians();
+        }
 
          if (enemyECLocs.size() != numEnlightenmentCenters && isFlagUnimportant) { // TODO: isFlagUnimportant?
-            // processMuckrakers();
+            processMuckrakers();
             isFlagUnimportant = false;
          }
 
 
         // spawn scouting muckrakers and process them for info
         if (turnCount % 5 == 0 && turnCount < 700) {
-            // spawnMuckrakers();
+            spawnMuckrakers();
         } else if (turnCount % 8 == 0 && turnCount > 50 && turnCount < 500 && enemyECLocs.size() != 0) {
-            // spawnSlanderers(); // adjust flag for slanderers? direction?
+            spawnSlanderers(); // adjust flag for slanderers? direction?
             isFlagUnimportant = false;
         } else if (turnCount % 10 == 0) {
             spawnPoliticians(); // politicians can chase slanderers if it sees them to defend
@@ -62,7 +67,7 @@ public class EC extends RobotPlayer {
     static void checkIfStillDefensePoliticians() throws GameActionException {
         MapLocation[] locations = new MapLocation[4];
         for (int i = 0; i < 4; i++) {
-            locations[i] = rc.getLocation().add(cardDirections[i]).add(cardDirections[i]);
+            locations[i] = rc.getLocation().add(cardDirections[i]).add(cardDirections[i]).add(cardDirections[i]);
 
         }
         boolean stillThere = true;
@@ -77,7 +82,7 @@ public class EC extends RobotPlayer {
             }
         }
         if (!stillThere) {
-            polID[index] = spawnBotToLocation(locations[index], 6, RobotType.POLITICIAN, 12);
+            polID[index] = spawnBotToLocation(locations[index], 6, RobotType.POLITICIAN, 20);
         }
     }
 
@@ -112,6 +117,18 @@ public class EC extends RobotPlayer {
             scoutID.add(rc.senseRobotAtLocation(rc.adjacentLocation(dir)).ID);
         }
 
+    }
+
+    /**
+     * Spawns a politician to capture a neutral EC
+     *
+     * @throws GameActionException
+     */
+    static void spawnCapturePols() throws GameActionException {
+        MapLocation neutralLoc = neutralECLocs.iterator().next();
+        spawnBotToLocation(neutralLoc, 8, RobotType.POLITICIAN, 12);
+        spawnBotToLocation(neutralLoc, 8, RobotType.POLITICIAN, 500);
+        neutralECLocs.remove(neutralLoc);
     }
 
     /**
@@ -173,7 +190,10 @@ public class EC extends RobotPlayer {
      */
 
     static Direction getOpenDirection() throws GameActionException {
-        for (Direction direction : directions) {
+        List<Direction> directionsList = Arrays.asList(directions);
+        Collections.shuffle(directionsList);
+
+        for (Direction direction : directionsList) {
             if (!rc.isLocationOccupied(rc.adjacentLocation(direction))) {
                 return direction;
             }
