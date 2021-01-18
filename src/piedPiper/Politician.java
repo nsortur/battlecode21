@@ -20,6 +20,7 @@ public class Politician extends RobotPlayer {
     static MapLocation targetLoc;
 
     static boolean convertPolitician = false;
+    static boolean capturePolitician = false;
     static boolean defendPolitician = false;
     static boolean defendSlandererPolitician = false;
     static boolean otherPolitician = false;
@@ -33,7 +34,10 @@ public class Politician extends RobotPlayer {
         }
 
         if (convertPolitician) {
-            attackEnemyEC();
+            attackEC(enemy);
+        }
+        if (capturePolitician) {
+            attackEC(Team.NEUTRAL);
         }
 
         if (defendPolitician) {
@@ -61,6 +65,9 @@ public class Politician extends RobotPlayer {
         } else if (ecFlagInfo[2] == 7) {
             // defend slanderer role
             defendSlandererPolitician = true;
+        } else if (ecFlagInfo[2] == 8) {
+            capturePolitician = true;
+            targetLoc = Util.getLocFromDecrypt(ecFlagInfo, ecLoc);
         } else {
             otherPolitician = true;
         }
@@ -74,24 +81,16 @@ public class Politician extends RobotPlayer {
      *
      * @throws GameActionException
      */
-    static void attackEnemyEC() throws GameActionException{
-        /**
-         * get location from ec arraylist
-         * calculate conviction to give (40% of EC conviction each for two politicians, 1% for a muckraker)
-         * destroyedEC stop attacking if it's destroyed
-         * if !destroyedEC, greedyMove to EC location while searching to empower if enlightenment center is seen
-         *      if rounds have been more than 50, spawn another army and send
-         * if destroyedEC, break and set attacking to false
-         */
-        System.out.println("Going to: " + targetLoc);
-        Util.greedyPath(targetLoc);
-        // attack and raised killed flag if about to kill
-        RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, null);
+    static void attackEC(Team team) throws GameActionException {
+
+        RobotInfo[] attackable = rc.senseNearbyRobots(2, team);
         for (RobotInfo robot : attackable) {
-            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && rc.canEmpower(actionRadius)) {
-                rc.empower(actionRadius);
+            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && rc.canEmpower(2)) {
+                rc.empower(2);
             }
         }
+        System.out.println("Going to: " + targetLoc);
+        Util.greedyPath(targetLoc);
 
     }
 

@@ -2,7 +2,9 @@ package piedPiper;
 
 import battlecode.common.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 
 public class EC extends RobotPlayer {
@@ -31,6 +33,9 @@ public class EC extends RobotPlayer {
         }
 
         // if found neutral EC run code to convert it
+        if (neutralECLocs.size() != 0 && rc.getInfluence() > 512) {
+            spawnCapturePols();
+        }
 
         // spawn defensive politicians if one is lost? keep track of ID's and make sure all of them are here
         if (turnCount > 20) {
@@ -112,6 +117,18 @@ public class EC extends RobotPlayer {
             scoutID.add(rc.senseRobotAtLocation(rc.adjacentLocation(dir)).ID);
         }
 
+    }
+
+    /**
+     * Spawns a politician to capture a neutral EC
+     *
+     * @throws GameActionException
+     */
+    static void spawnCapturePols() throws GameActionException {
+        MapLocation neutralLoc = neutralECLocs.iterator().next();
+        spawnBotToLocation(neutralLoc, 8, RobotType.POLITICIAN, 12);
+        spawnBotToLocation(neutralLoc, 8, RobotType.POLITICIAN, 500);
+        neutralECLocs.remove(neutralLoc);
     }
 
     /**

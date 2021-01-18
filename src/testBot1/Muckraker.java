@@ -2,6 +2,9 @@ package testBot1;
 
 import battlecode.common.*;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class Muckraker extends RobotPlayer {
     // our enlightenment center's ID (one muckraker spawned from)
     static int ecID;
@@ -12,8 +15,33 @@ public class Muckraker extends RobotPlayer {
     // location of spawning EC
     static MapLocation homeECLoc;
 
+    static Integer[] scoutFlagValues = new Integer[]{11,12,13,14,15,16,17,18};
+    static List<Integer> listOfScoutVals = Arrays.asList(scoutFlagValues);
+
+    static boolean isScout = false;
+
+    static MapLocation targetECLoc;
+    static MapLocation ecLoc;
+
     static void run() throws GameActionException {
-        runScout(); // later on add if condition in case not scout
+        if (ecID == 0) {
+            ecID = Util.getECID();
+            isScout();
+        }
+
+        if (isScout) {
+            runScout(); // later on add if condition in case not scout
+        } else {
+            checkForTargetECLoc();
+            //Util.greedyPathAndAvoid(Util.calculateNewLocationWithDirection(ecLoc.directionTo(targetECLoc),
+            //        10, targetECLoc), targetECLoc, 100);
+        }
+    }
+
+    static void isScout() throws GameActionException {
+        if (listOfScoutVals.contains(Util.tryGetFlag(ecID))) {
+            isScout = true;
+        }
     }
 
     /**
@@ -23,7 +51,6 @@ public class Muckraker extends RobotPlayer {
      */
     static void runScout() throws GameActionException {
         if (scoutDir == null) {
-            ecID = Util.getECID();
             scoutDir = Util.getScoutDirection(ecID);
             // EC is 1 unit in opposite direction scout is heading at start
             homeECLoc = rc.getLocation().subtract(scoutDir);
@@ -128,5 +155,20 @@ public class Muckraker extends RobotPlayer {
         }
 
         return hitEdge;
+    }
+
+    /**
+     * Checks for target ec loc
+     * @throws GameActionException
+     */
+    static void checkForTargetECLoc() throws GameActionException{
+        if (targetECLoc == null) {
+            int[] ecFlagInfo = Util.decryptOffsets(Util.tryGetFlag(ecID));
+
+            if (ecFlagInfo[2] == 9) {
+                ecLoc = Util.locationOfFriendlyEC();
+                targetECLoc = Util.getLocFromDecrypt(ecFlagInfo, ecLoc);
+            }
+        }
     }
 }

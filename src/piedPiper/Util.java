@@ -225,44 +225,80 @@ public class Util extends RobotPlayer {
      * @throws GameActionException
      */
     static void greedyPath(MapLocation target) throws GameActionException {
-        if (rc.getLocation().equals(target)) return;
-
-
-        Direction direction = rc.getLocation().directionTo(target);
-
-        if (rc.isReady()){
-            List<Double> passabilities = new ArrayList<>();
-            List<Direction> possibleDirections = new ArrayList<>();
-
-            // add 3 directions to check
-            for (int i = 0; i < 3; i++) {
-                Direction directionToAdd = directionsList.get(Math.abs((directionsList.indexOf(direction) - 1 + i) % directionsList.size()));
-                if (rc.onTheMap(rc.getLocation().add(directionToAdd))){
-                    possibleDirections.add(directionToAdd);
-                }
-            }
-
-            // add passabilties
-            for (int i = 0; i < possibleDirections.size(); i++) {
-                passabilities.add(rc.sensePassability(rc.getLocation().add(possibleDirections.get(i))));
-            }
-
-            int minIndex = passabilities.indexOf(Collections.min(passabilities));
-            //System.out.println(passabilities.toString());
-            //System.out.println(possibleDirections.toString());
-
-            Direction go = possibleDirections.get(minIndex);
-            if (rc.canMove(go)){
-                rc.move(possibleDirections.get(minIndex));
-            }
-            else{
-                for (Direction value : directionsList) {
-                    if (rc.canMove(value)) rc.move(value);
-                }
-            }
+        MapLocation loc = rc.getLocation();
+        if (loc.equals(target)){
+            return; // we have arrived at location
         }
-    }
+        Direction direction = loc.directionTo(target);
+        try {
+            if (rc.isReady()) {
+                Hashtable<Integer, Direction> areas = new Hashtable<>();
+                for (int i = 0; i < 3; i++) {
+                    areas.put(i, directionsList.get(Math.abs((directionsList.indexOf(direction) - 1 + i) % directionsList.size())));
+                }
+                HashMap<Double, MapLocation> possibleDirections = new HashMap<>();
+                for (int i = 0; i < 3; i++) {
+                    if (rc.onTheMap(rc.getLocation().add(areas.get(i)))){
 
+                        possibleDirections.put(rc.sensePassability(loc.add(areas.get(i))), loc.add(areas.get(i)));
+                    }
+                }
+                List keys = new ArrayList(possibleDirections.keySet());
+                Collections.sort(keys);
+
+                try {
+                    MapLocation loc1 = possibleDirections.get(keys.get(2));
+                    Direction posDir1 = loc.directionTo(loc1);
+
+                    MapLocation loc2 = possibleDirections.get(keys.get(1));
+                    Direction posDir2 = loc.directionTo(loc2);
+
+                    MapLocation loc3 = possibleDirections.get(keys.get(0));
+                    Direction posDir3 = loc.directionTo(loc3);
+
+                    if (tryMove(posDir1)) {
+                        // you moved!
+                    } else if (tryMove(posDir2)) {
+                        // you moved there!
+                    } else if (tryMove(posDir3)) {
+                        // you moved here!
+                    } else {
+                        for (Direction value : directionsList) {
+                            if (rc.canMove(value)) {
+                                rc.move(value);
+                            }
+                        }
+                    }
+                } catch (Exception q) {
+                    try {
+                        MapLocation loc2 = possibleDirections.get(keys.get(1));
+                        Direction posDir2 = loc.directionTo(loc2);
+
+                        if (tryMove(posDir2)) {
+                            // moved
+                        }
+                    } catch (Exception m) {
+                        try {
+                            MapLocation loc3 = possibleDirections.get(keys.get(0));
+                            Direction posDir3 = loc.directionTo(loc3);
+
+                            if (tryMove(posDir3)) {
+                                // moved
+                            } else {
+                                // blocked off
+                            }
+
+                        } catch (Exception v) {
+                            // inner catch
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // outer error
+        }
+
+    }
 
     /**
      * Calculates a new location in the direction you want based on how many tiles
