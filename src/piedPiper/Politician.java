@@ -38,7 +38,13 @@ public class Politician extends RobotPlayer {
 
         if (defendPolitician) {
             System.out.println("My target LOC is " + targetLoc);
-            Util.greedyPath(targetLoc);
+            try{
+                Util.greedyPath(targetLoc);
+            }
+            catch(Exception e){
+                System.out.print("There was a problem ");
+                System.out.println(e);
+            }
         }
 
     }

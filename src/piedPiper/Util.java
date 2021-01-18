@@ -274,6 +274,7 @@ public class Util extends RobotPlayer {
             // System.out.println("Is not ready");
         } catch (Exception e) {
             // System.out.println("Outer catch");
+            System.out.println("Line 277 in Util");
             System.out.println(e);
         }
 
