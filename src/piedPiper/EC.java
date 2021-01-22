@@ -7,8 +7,8 @@ import java.util.*;
 
 public class EC extends RobotPlayer {
     // The location of the enemy EC
-    static HashSet<MapLocation> enemyECLocs = new HashSet<>();
-    static HashSet<MapLocation> neutralECLocs = new HashSet<>();
+    static LinkedHashSet<MapLocation> enemyECLocs = new LinkedHashSet<>();
+    static LinkedHashSet<MapLocation> neutralECLocs = new LinkedHashSet<>();
     static ArrayList<MapLocation> capturedNeutralECs = new ArrayList<>();
 
     static int numEnlightenmentCenters = 0;
@@ -22,7 +22,7 @@ public class EC extends RobotPlayer {
     // TODO: Fix neutral EC bugs (Neel)
 
     static void run() throws GameActionException {
-        boolean isFlagImportant = false;
+        boolean isFlagSet = false;
         // IMPORTANT - We cannot spawn anything on the first turn
         // The order of these functions matter, it's the priority of spawning bots
 
@@ -36,28 +36,29 @@ public class EC extends RobotPlayer {
             spawnCapturePols();
         }
 
+
         // spawn defensive politicians if one is lost? keep track of ID's and make sure all of them are here
         if (turnCount > 20) {
-            checkIfStillDefensePoliticians();
+            if (checkIfStillDefensePoliticians()) {
+                isFlagSet = true;
+            }
         }
         System.out.println("Reached defense politician on turn " + rc.getRoundNum());
 
-
-        if (enemyECLocs.size() != numEnlightenmentCenters && isFlagImportant) { // TODO: isFlagImportant?
+        if (rc.getRoundNum() < 750) { // TODO: isFlagSet?
             processMuckrakers();
-            isFlagImportant = true;
          }
 
         System.out.println("Reached process muckrakers on turn " + rc.getRoundNum());
 
         // spawn scouting muckrakers and process them for info
-        if (turnCount % 4 == 0 && turnCount < 700) {
+        if (turnCount % 4 == 0 && turnCount < 1000) {
             spawnMuckrakers();
             System.out.println("Reached spawn muckraker on turn " + rc.getRoundNum());
 
         } else if (turnCount % 7 == 0 && turnCount > 50 && turnCount < 500 && enemyECLocs.size() != 0) {
             spawnSlanderers(); // adjust flag for slanderers? direction?
-            isFlagImportant = true;
+            isFlagSet = true;
             System.out.println("Reached spawn slanderer on turn " + rc.getRoundNum());
 
         } else if (turnCount % 11 == 0) {
@@ -67,9 +68,11 @@ public class EC extends RobotPlayer {
         }
 
 
-        if (!isFlagImportant) {
-            // put up our flag for politicians and (maybe? muckrakers) to use with a special code
+        if (!isFlagSet) {
+            // todo: enemy ec flag muckraker surround flag
+            Util.trySetFlag(-2);
         }
+
 
         if (rc.getRoundNum() > 550){
             rc.bid((int) (rc.getInfluence() * bidding));
@@ -80,7 +83,7 @@ public class EC extends RobotPlayer {
 
     }
 
-    static void checkIfStillDefensePoliticians() throws GameActionException {
+    static boolean checkIfStillDefensePoliticians() throws GameActionException {
         MapLocation[] locations = new MapLocation[4];
         for (int i = 0; i < 4; i++) {
             locations[i] = rc.getLocation().add(cardDirections[i]).add(cardDirections[i]).add(cardDirections[i]);
@@ -99,7 +102,9 @@ public class EC extends RobotPlayer {
         }
         if (!stillThere) {
             polID[index] = spawnBotToLocation(locations[index], 6, RobotType.POLITICIAN, 20);
+            return true;
         }
+        return false;
     }
 
 

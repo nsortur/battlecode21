@@ -104,8 +104,15 @@ public class Politician extends RobotPlayer {
         RobotInfo[] attackable = rc.senseNearbyRobots(2, team);
         RobotInfo[] ourRobots = rc.senseNearbyRobots(2, rc.getTeam());
         for (RobotInfo robot : attackable) {
-            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && rc.canEmpower(2) && ourRobots.length == 0) {
+            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && rc.canEmpower(2) && ourRobots.length < 2) {
                 rc.empower(2);
+            }
+        }
+        if (rc.canDetectLocation(targetLoc)) {
+            RobotInfo maybeNeutralEC = rc.senseRobotAtLocation(targetLoc);
+            int distToEC = rc.getLocation().distanceSquaredTo(targetLoc);
+            if (maybeNeutralEC.team == rc.getTeam() && distToEC < 4) {
+                rc.empower(4);
             }
         }
         System.out.println("Going to: " + targetLoc);
