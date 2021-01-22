@@ -49,6 +49,10 @@ public class Politician extends RobotPlayer {
             Util.greedyPath(targetLoc);
             defendTheEC();
         }
+
+        if (defendSlandererPolitician){
+            defendSlanderer();
+        }
         if (otherPolitician){
             // MAKE IT SAME AS MUCKRAKER ALGORITHM!!!
             RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
@@ -66,6 +70,13 @@ public class Politician extends RobotPlayer {
 
     }
 
+    private static void defendSlanderer() {
+        System.out.println("Enemy ec loc at " + ecLoc);
+        System.out.println();
+        System.out.println();
+        rc.resign();
+    }
+
     /**
      * Checks the role of a politician based on the flag of the EC
      * @throws GameActionException
@@ -81,7 +92,7 @@ public class Politician extends RobotPlayer {
             targetLoc = Util.getLocFromDecrypt(ecFlagInfo, ecLoc);
             defendPolitician = true;
         } else if (ecFlagInfo[2] == 7) {
-            // defend slanderer role
+            targetLoc = Util.getLocFromDecrypt(ecFlagInfo, ecLoc);
             defendSlandererPolitician = true;
         } else if (ecFlagInfo[2] == 8) {
             capturePolitician = true;

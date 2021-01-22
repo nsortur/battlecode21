@@ -6,6 +6,7 @@ import java.util.*;
 
 
 public class EC extends RobotPlayer {
+
     // The location of the enemy EC
     static LinkedHashSet<MapLocation> enemyECLocs = new LinkedHashSet<>();
     static LinkedHashSet<MapLocation> neutralECLocs = new LinkedHashSet<>();
@@ -19,7 +20,12 @@ public class EC extends RobotPlayer {
     // ID's of the politicians - [0] -> North [1] -> East [2] -> South [3] -> West
     static int[] polID = new int[4];
 
+    // bidding variables
+    static int previousVoteNum = 0;
+    static int cap = 2;
+
     // TODO: Fix neutral EC bugs (Neel)
+    // TODO: Replenish defendPoliticians
 
     static void run() throws GameActionException {
         boolean isFlagSet = false;
@@ -74,12 +80,59 @@ public class EC extends RobotPlayer {
         }
 
 
+        if (rc.getRoundNum() < 550){
+            rc.bid(1);
+        }
         if (rc.getRoundNum() > 550){
             rc.bid((int) (rc.getInfluence() * bidding));
-            bidding += .0001;
+            bidding += .00015;
         }
 
         System.out.println("Reached end on turn " + rc.getRoundNum());
+        bidInfluence();
+
+    }
+
+    static void bidInfluence() throws GameActionException {
+        if (rc.getTeamVotes() > 751){
+            return;
+        }
+
+        if (rc.getRoundNum() < 450) {
+            if (rc.canBid(cap)){
+                rc.bid(cap);
+            }
+            System.out.println("early round bid");
+        } else if (rc.getRoundNum() < 1250) {
+            if (previousVoteNum == rc.getTeamVotes()) {
+                cap += 2;
+            }
+            int influenceBid = (int) (0.1 * rc.getInfluence());
+            if (influenceBid > cap) {
+                if (rc.canBid(influenceBid)){
+                    rc.bid(influenceBid);
+                }
+                System.out.println("over the cap");
+            } else {
+                if (rc.canBid(influenceBid)){
+                    rc.bid(influenceBid);
+                }
+                System.out.println("under the cap");
+
+            }
+        } else {
+            int influenceBid = (int) (0.1 * rc.getInfluence());
+            System.out.println("bid: " + influenceBid);
+            if (rc.canBid(influenceBid)){
+                rc.bid(influenceBid);
+            }
+
+            System.out.println("end game");
+
+        }
+
+        previousVoteNum = rc.getTeamVotes();
+
 
     }
 
