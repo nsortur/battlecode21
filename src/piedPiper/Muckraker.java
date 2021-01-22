@@ -21,10 +21,14 @@ public class Muckraker extends RobotPlayer{
         }
 
         tryKillSlanderer();
-        isCloseToEnemyEC();
         isCloseToNeutralEC();
 
-        moveAway();
+        if (isCloseToEnemyEC()) {
+            // doing things
+        } else {
+            moveAway();
+        }
+
     }
 
 
@@ -146,7 +150,7 @@ public class Muckraker extends RobotPlayer{
         for (RobotInfo robot : robots) {
             if (robot.type == RobotType.ENLIGHTENMENT_CENTER && robot.team == rc.getTeam().opponent()) {
                 MapLocation enemyECLoc = robot.location;
-
+                Util.greedyPath(enemyECLoc);
                 int x_offset = enemyECLoc.x - ecLoc.x;
                 int y_offset = enemyECLoc.y - ecLoc.y;
 

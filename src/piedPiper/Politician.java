@@ -50,6 +50,7 @@ public class Politician extends RobotPlayer {
             defendTheEC();
         }
         if (otherPolitician){
+            // MAKE IT SAME AS MUCKRAKER ALGORITHM!!!
             RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
             if (attackable.length > 2) {
                 if (rc.canEmpower(actionRadius)) {

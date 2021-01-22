@@ -105,22 +105,28 @@ public class Util extends RobotPlayer {
      * @return coordinates of edge and type of flag corresponding to dictionary in doc
      */
     static int[] decryptOffsets(int flagVal) {
-        int[] decrypted = new int[3];
-        int x_sign = subInt(flagVal, 0, 1);
-        int y_sign = subInt(flagVal, 3, 4);
-        int flag_x = subInt(flagVal, 1, 3) - 10;
-        int flag_y = subInt(flagVal, 4, 6) - 10;
-        int dictVal = subInt(flagVal, 6, 7);
+        if (flagVal != -1 && flagVal != -2) {
+            int[] decrypted = new int[3];
+            int x_sign = subInt(flagVal, 0, 1);
+            int y_sign = subInt(flagVal, 3, 4);
+            int flag_x = subInt(flagVal, 1, 3) - 10;
+            int flag_y = subInt(flagVal, 4, 6) - 10;
+            int dictVal = subInt(flagVal, 6, 7);
 
-        // make them negative if necessary
-        if (x_sign == 2) flag_x = flag_x - (2 * flag_x);
-        if (y_sign == 2) flag_y = flag_y - (2 * flag_y);
+            // make them negative if necessary
+            if (x_sign == 2) flag_x = flag_x - (2 * flag_x);
+            if (y_sign == 2) flag_y = flag_y - (2 * flag_y);
 
-        decrypted[0] = flag_x;
-        decrypted[1] = flag_y;
-        decrypted[2] = dictVal;
+            decrypted[0] = flag_x;
+            decrypted[1] = flag_y;
+            decrypted[2] = dictVal;
 
-        return decrypted;
+            return decrypted;
+        } else if (flagVal == -1) {
+            return new int[]{0,0,-1};
+        } else {
+            return new int[]{0,0,-2};
+        }
     }
 
 

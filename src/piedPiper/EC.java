@@ -22,7 +22,7 @@ public class EC extends RobotPlayer {
     // TODO: Fix neutral EC bugs (Neel)
 
     static void run() throws GameActionException {
-        boolean isFlagUnimportant = true;
+        boolean isFlagImportant = false;
         // IMPORTANT - We cannot spawn anything on the first turn
         // The order of these functions matter, it's the priority of spawning bots
 
@@ -40,25 +40,34 @@ public class EC extends RobotPlayer {
         if (turnCount > 20) {
             checkIfStillDefensePoliticians();
         }
+        System.out.println("Reached defense politician on turn " + rc.getRoundNum());
 
-         if (enemyECLocs.size() != numEnlightenmentCenters && isFlagUnimportant) { // TODO: isFlagUnimportant?
+
+        if (enemyECLocs.size() != numEnlightenmentCenters && isFlagImportant) { // TODO: isFlagImportant?
             processMuckrakers();
-            isFlagUnimportant = false;
+            isFlagImportant = true;
          }
 
+        System.out.println("Reached process muckrakers on turn " + rc.getRoundNum());
 
         // spawn scouting muckrakers and process them for info
-        if (turnCount % 5 == 0 && turnCount < 700) {
+        if (turnCount % 4 == 0 && turnCount < 700) {
             spawnMuckrakers();
-        } else if (turnCount % 8 == 0 && turnCount > 50 && turnCount < 500 && enemyECLocs.size() != 0) {
+            System.out.println("Reached spawn muckraker on turn " + rc.getRoundNum());
+
+        } else if (turnCount % 7 == 0 && turnCount > 50 && turnCount < 500 && enemyECLocs.size() != 0) {
             spawnSlanderers(); // adjust flag for slanderers? direction?
-            isFlagUnimportant = false;
-        } else if (turnCount % 10 == 0) {
-            spawnPoliticians(); // politicians can chase slanderers if it sees them to defend
+            isFlagImportant = true;
+            System.out.println("Reached spawn slanderer on turn " + rc.getRoundNum());
+
+        } else if (turnCount % 11 == 0) {
+            // spawnPoliticians(); // politicians can chase slanderers if it sees them to defend
+            System.out.println("Reached spawn politician on turn " + rc.getRoundNum());
+
         }
 
 
-        if (isFlagUnimportant) {
+        if (!isFlagImportant) {
             // put up our flag for politicians and (maybe? muckrakers) to use with a special code
         }
 
@@ -67,19 +76,21 @@ public class EC extends RobotPlayer {
             bidding += .0001;
         }
 
+        System.out.println("Reached end on turn " + rc.getRoundNum());
+
     }
 
     static void checkIfStillDefensePoliticians() throws GameActionException {
         MapLocation[] locations = new MapLocation[4];
         for (int i = 0; i < 4; i++) {
             locations[i] = rc.getLocation().add(cardDirections[i]).add(cardDirections[i]).add(cardDirections[i]);
-
         }
+
         boolean stillThere = true;
         int index = 0;
 
         for (int id : polID) {
-            if (!rc.canSenseRobot(id)) {
+            if (!rc.canSenseRobot(id) && rc.onTheMap(locations[index])) {
                 stillThere = false;
                 break;
             } else {
@@ -93,7 +104,7 @@ public class EC extends RobotPlayer {
 
 
     static void spawnPoliticians() throws GameActionException {
-
+        spawnBot(RobotType.POLITICIAN, getOpenDirection(), 15);
     }
 
     /**
@@ -118,9 +129,9 @@ public class EC extends RobotPlayer {
     static void spawnMuckrakers() throws GameActionException {
         Direction dir = getOpenDirection();
         if (dir != null) {
-            spawnBot(RobotType.MUCKRAKER, dir, 1);
-            // TODO: Fix this error
-            scoutID.add(rc.senseRobotAtLocation(rc.adjacentLocation(dir)).ID);
+            if (spawnBot(RobotType.MUCKRAKER, dir, 1)) {
+                scoutID.add(rc.senseRobotAtLocation(rc.adjacentLocation(dir)).ID);
+            }
         }
 
     }
@@ -203,7 +214,7 @@ public class EC extends RobotPlayer {
         Collections.shuffle(directionsList);
 
         for (Direction direction : directionsList) {
-            if (!rc.isLocationOccupied(rc.adjacentLocation(direction))) {
+            if (rc.onTheMap(rc.adjacentLocation(direction)) && !rc.isLocationOccupied(rc.adjacentLocation(direction))) {
                 return direction;
             }
         }
@@ -276,8 +287,9 @@ public class EC extends RobotPlayer {
         int flagToShow = Util.encryptOffsets(offsets[0], offsets[1], decryptCode);
 
         Direction dir = getOpenDirection();
-        if (dir == null) {
+        while (dir == null) {
             Clock.yield();
+            dir = getOpenDirection();
         }
         while (!spawnBot(robotType, dir, influence)) {
             Clock.yield();
