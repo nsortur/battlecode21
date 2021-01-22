@@ -33,6 +33,8 @@ public class Politician extends RobotPlayer {
             ecLoc = Util.locationOfFriendlyEC();
             checkRole();
             System.out.println("the flag i put out was to: " + targetLoc + " on turn " + turnCount);
+        } else if (rc.getFlag(rc.getID()) == 10) {
+            otherPolitician = true;
         }
 
         if (convertPolitician) {
@@ -48,17 +50,17 @@ public class Politician extends RobotPlayer {
             defendTheEC();
         }
         if (otherPolitician){
-            RobotInfo[] attackable = rc.senseNearbyRobots();
-            int actionRadius = rc.getType().actionRadiusSquared;
-            for (RobotInfo robot : attackable) {
-                if (robot.team != rc.getTeam().opponent()) {
+            RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
+            if (attackable.length > 2) {
+                if (rc.canEmpower(actionRadius)) {
                     rc.empower(actionRadius);
                 }
             }
 
-            Random rand = new Random();
-            Direction go = directionsList.get(rand.nextInt(8));
-            if (rc.canMove(go)) rc.move(go);
+//            Random rand = new Random();
+//            Direction go = directionsList.get(rand.nextInt(8));
+//            if (rc.canMove(go)) rc.move(go);
+            Util.tryMove(Util.randomDirection());
         }
 
     }
@@ -99,8 +101,9 @@ public class Politician extends RobotPlayer {
     static void attackEC(Team team) throws GameActionException {
 
         RobotInfo[] attackable = rc.senseNearbyRobots(2, team);
+        RobotInfo[] ourRobots = rc.senseNearbyRobots(2, rc.getTeam());
         for (RobotInfo robot : attackable) {
-            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && rc.canEmpower(2)) {
+            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && rc.canEmpower(2) && ourRobots.length == 0) {
                 rc.empower(2);
             }
         }

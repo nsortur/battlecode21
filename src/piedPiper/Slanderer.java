@@ -15,6 +15,7 @@ public class Slanderer extends RobotPlayer {
             ecID = Util.getECID();
             ecLoc = Util.locationOfFriendlyEC();
             checkFlag();
+            rc.setFlag(10);
         }
 
         moveAway();

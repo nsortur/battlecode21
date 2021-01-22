@@ -9,9 +9,10 @@ public class EC extends RobotPlayer {
     // The location of the enemy EC
     static HashSet<MapLocation> enemyECLocs = new HashSet<>();
     static HashSet<MapLocation> neutralECLocs = new HashSet<>();
+    static ArrayList<MapLocation> capturedNeutralECs = new ArrayList<>();
 
     static int numEnlightenmentCenters = 0;
-    static double bidding = 0.1;
+    static double bidding = 0.15;
     // ID's of the scout's
     static LinkedHashSet<Integer> scoutID = new LinkedHashSet<>();
 
@@ -61,7 +62,7 @@ public class EC extends RobotPlayer {
             // put up our flag for politicians and (maybe? muckrakers) to use with a special code
         }
 
-        if (rc.getRoundNum() > 200){
+        if (rc.getRoundNum() > 550){
             rc.bid((int) (rc.getInfluence() * bidding));
             bidding += .0001;
         }
@@ -118,6 +119,7 @@ public class EC extends RobotPlayer {
         Direction dir = getOpenDirection();
         if (dir != null) {
             spawnBot(RobotType.MUCKRAKER, dir, 1);
+            // TODO: Fix this error
             scoutID.add(rc.senseRobotAtLocation(rc.adjacentLocation(dir)).ID);
         }
 
@@ -133,6 +135,7 @@ public class EC extends RobotPlayer {
         spawnBotToLocation(neutralLoc, 8, RobotType.POLITICIAN, 12);
         spawnBotToLocation(neutralLoc, 8, RobotType.POLITICIAN, 500);
         neutralECLocs.remove(neutralLoc);
+        capturedNeutralECs.add(neutralLoc);
     }
 
     /**
@@ -153,8 +156,10 @@ public class EC extends RobotPlayer {
                         enemyECLocs.add(Util.getLocFromDecrypt(flagInfo, rc.getLocation()));
                         break;
                     case 2:
-                        neutralECLocs.add(Util.getLocFromDecrypt(flagInfo, rc.getLocation()));
-                        // spawnNeutralPolitician();
+                        MapLocation foundLoc = Util.getLocFromDecrypt(flagInfo, rc.getLocation());
+                        if (!capturedNeutralECs.contains(foundLoc)) {
+                            neutralECLocs.add(foundLoc);
+                        }
                         break; // capture neutral ec using flaginfo
                     default: break;
                 }
