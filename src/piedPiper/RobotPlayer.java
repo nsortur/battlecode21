@@ -1,8 +1,7 @@
-package testBot1;
+package piedPiper;
+
 import battlecode.common.*;
 
-
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -36,15 +35,9 @@ public strictfp class RobotPlayer {
     };
 
     static int turnCount;
-    static int numMuckrakers = 0;
-    static int numSlanderers = 0;
-    static int numPoliticians = 0;
-    static int numEnlightenmentCenters; // figure out how to calculate this value (kind of did)
-    static ArrayList<MapLocation> enemyECLocs = new ArrayList<>();
 
-    // do we need the location of our own EC's?
-
-    static int[] flagEC; // the integer value of the EC's flag
+    static final double attackPolProp = 0.7;
+    static final double slandProp = 0.5;
 
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
@@ -55,7 +48,7 @@ public strictfp class RobotPlayer {
         // This is the RobotController object. You use it to perform actions from this robot,
         // and to get information on its current status.
         RobotPlayer.rc = rc;
-        System.out.println(turnCount);
+        // System.out.println(turnCount);
 
         turnCount = 0;
 
