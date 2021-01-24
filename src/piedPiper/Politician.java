@@ -5,12 +5,12 @@ import battlecode.common.*;
 import java.util.HashSet;
 import java.util.Random;
 
-// 4 Types of Politcians
+// 4 Types of Politicians
 // 1. Convert Politicians - given a location - go there and convert (flag code of 5)
 // 2. Defend Politicians - given a location, and must defend (flag code of 6)
 // 3. Defend Slanderer Politicians  - given enemy EC - must go in opposite direction until a few slanderers in sight
 // then space out away from other politicians by moving away from them (flag code of 7)
-// 4. Other Politicans - randomly created and slanderer spawned - must go around and move using muckraker code
+// 4. Other Politicians - randomly created and slanderer spawned - must go around and move using muckraker code
 // and only kill slanderers if it can, same with enlightenment centers, and maybe politicians as well? (flag code of 8)
 
 public class Politician extends RobotPlayer {
@@ -36,7 +36,7 @@ public class Politician extends RobotPlayer {
             ecID = Util.getECID();
             ecLoc = Util.locationOfFriendlyEC();
             checkRole();
-            System.out.println("the flag i put out was to: " + targetLoc + " on turn " + turnCount);
+           // System.out.println("the flag i put out was to: " + targetLoc + " on turn " + turnCount);
         } else if (rc.getFlag(rc.getID()) == 10) {
             otherPolitician = true;
         }
@@ -57,7 +57,7 @@ public class Politician extends RobotPlayer {
         }
 
         if (defendPolitician) {
-            System.out.println("My target LOC is " + targetLoc);
+           // System.out.println("My target LOC is " + targetLoc);
             Util.greedyPath(targetLoc);
             defendTheEC();
         }
@@ -73,9 +73,7 @@ public class Politician extends RobotPlayer {
                     rc.empower(actionRadius);
                 }
             }
-
         }
-
     }
 
     private static void defendSlanderer() {
@@ -87,7 +85,7 @@ public class Politician extends RobotPlayer {
 
     /**
      * Checks the role of a politician based on the flag of the EC
-     * @throws GameActionException
+     * @throws GameActionException 
      */
 
     static void checkRole() throws GameActionException {
@@ -136,10 +134,12 @@ public class Politician extends RobotPlayer {
             RobotInfo maybeNeutralEC = rc.senseRobotAtLocation(targetLoc);
             int distToEC = rc.getLocation().distanceSquaredTo(targetLoc);
             if (maybeNeutralEC.team == rc.getTeam() && distToEC < 4) {
-                rc.empower(4);
+                if (rc.canEmpower(4)){
+                    rc.empower(4);
+                }
             }
         }
-        System.out.println("Going to: " + targetLoc);
+       // System.out.println("Going to: " + targetLoc);
         Util.greedyPath(targetLoc);
 
     }

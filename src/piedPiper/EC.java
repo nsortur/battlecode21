@@ -52,27 +52,27 @@ public class EC extends RobotPlayer {
                     isFlagSet = true;
                 }
             }
-            System.out.println("Reached defense politician on turn " + rc.getRoundNum());
+           // System.out.println("Reached defense politician on turn " + rc.getRoundNum());
 
             if (enemyECLocs.size() != numEnlightenmentCenters) { // TODO: isFlagSet?
                 processMuckrakers();
             }
 
-            System.out.println("Reached process muckrakers on turn " + rc.getRoundNum());
+           // System.out.println("Reached process muckrakers on turn " + rc.getRoundNum());
 
             // spawn scouting muckrakers and process them for info
             if (turnCount % 4 == 0 && turnCount < 1000) {
                 spawnMuckrakers();
-                System.out.println("Reached spawn muckraker on turn " + rc.getRoundNum());
+              //  System.out.println("Reached spawn muckraker on turn " + rc.getRoundNum());
 
             } else if (turnCount % 7 == 0 && turnCount > 50 && turnCount < 500 && enemyECLocs.size() != 0) {
                 spawnSlanderers(); // adjust flag for slanderers? direction?
                 isFlagSet = true;
-                System.out.println("Reached spawn slanderer on turn " + rc.getRoundNum());
+               // System.out.println("Reached spawn slanderer on turn " + rc.getRoundNum());
 
             } else if (turnCount % 11 == 0) {
                 // spawnPoliticians(); // politicians can chase slanderers if it sees them to defend
-                System.out.println("Reached spawn politician on turn " + rc.getRoundNum());
+               // System.out.println("Reached spawn politician on turn " + rc.getRoundNum());
 
             }
 
@@ -91,7 +91,7 @@ public class EC extends RobotPlayer {
                 bidding += .00015;
             }
 
-            System.out.println("Reached end on turn " + rc.getRoundNum());
+          //  System.out.println("Reached end on turn " + rc.getRoundNum());
             //bidInfluence();
         }
     }
@@ -131,12 +131,12 @@ public class EC extends RobotPlayer {
                 if (rc.canBid(influenceBid)){
                     rc.bid(influenceBid);
                 }
-                System.out.println("over the cap");
+               // System.out.println("over the cap");
             } else {
                 if (rc.canBid(influenceBid)){
                     rc.bid(influenceBid);
                 }
-                System.out.println("under the cap");
+              //  System.out.println("under the cap");
 
             }
         } else {
@@ -146,7 +146,7 @@ public class EC extends RobotPlayer {
                 rc.bid(influenceBid);
             }
 
-            System.out.println("end game");
+           // System.out.println("end game");
 
         }
 
