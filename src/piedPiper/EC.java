@@ -14,7 +14,7 @@ public class EC extends RobotPlayer {
     static ArrayList<MapLocation> capturedNeutralECs = new ArrayList<>();
 
     static int numEnlightenmentCenters = 0;
-    static double bidding = 0.15;
+    static int stuck = 0;
     // ID's of the scout's
     static LinkedHashSet<Integer> scoutID = new LinkedHashSet<>();
 
@@ -37,10 +37,6 @@ public class EC extends RobotPlayer {
         if (numEnlightenmentCenters == 0) {
             getNumEC();
         }
-        if (isSurrounded()){
-            bidSurrounded();
-        }
-        else {
             // if found neutral EC run code to convert it
             if (neutralECLocs.size() != 0 && rc.getInfluence() > neutralECConvics.iterator().next() + 30) {
                 spawnCapturePols();
@@ -82,28 +78,39 @@ public class EC extends RobotPlayer {
                 Util.trySetFlag(-2);
             }
 
-
-            if (rc.getRoundNum() < 550) {
-                rc.bid(1);
-            }
-            if (rc.getRoundNum() > 550) {
-                rc.bid((int) (rc.getInfluence() * bidding));
-                bidding += .00015;
-            }
-
           //  System.out.println("Reached end on turn " + rc.getRoundNum());
-            //bidInfluence();
+           if (isSurrounded()){
+               bidSurrounded();
+           }
+           else{
+               stuck = 0;
+               bidInfluence();
+           }
+
+
+
+    }
+
+    private static void bidSurrounded() throws GameActionException {
+        if (stuck < 15){
+            stuck++;
+            return;
+        }
+        if (rc.canBid((int) ( rc.getInfluence() * .1))){
+            rc.bid((int) (rc.getInfluence() * .1));
         }
     }
 
 
     // TODO: bidding if surrounded
-    private static void bidSurrounded() {
 
-    }
 
     private static boolean isSurrounded() throws GameActionException {
+
         for (Direction direction : directionsList) {
+            if (!rc.onTheMap(rc.getLocation().add(direction)))
+                continue;
+
             if (!rc.isLocationOccupied(rc.getLocation().add(direction))) {
                 return false;
             }
