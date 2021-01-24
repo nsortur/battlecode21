@@ -102,12 +102,13 @@ public class EC extends RobotPlayer {
 
     }
 
-    private static boolean isSurrounded() {
+    private static boolean isSurrounded() throws GameActionException {
         for (Direction direction : directionsList) {
-            if (rc.canBuildRobot(RobotType.MUCKRAKER, direction, 1)) {
+            if (!rc.isLocationOccupied(rc.getLocation().add(direction))) {
                 return false;
             }
         }
+        System.out.println("I am at " + rc.getLocation() + " and am surrounded");
         return true;
     }
 
