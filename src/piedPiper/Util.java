@@ -271,8 +271,9 @@ public class Util extends RobotPlayer {
             // move in random directions
             if (passabilities.isEmpty()){
                 for (int i = 0; i < 16; i++) {
-                    if (rc.canMove(randomDirection())){
-                        rc.move(randomDirection());
+                    Direction randomDirection = randomDirection();
+                    if (rc.canMove(randomDirection)){
+                        rc.move(randomDirection);
                         return;
                     }
                 }

@@ -28,53 +28,11 @@ public class Politician extends RobotPlayer {
     static boolean otherPolitician = false;
 
     static void run() throws GameActionException {
-        if (turnCount == 1 && rc.getFlag(rc.getID()) == 0) {
-            ecID = Util.getECID();
-            ecLoc = Util.locationOfFriendlyEC();
-            checkRole();
-            System.out.println("the flag i put out was to: " + targetLoc + " on turn " + turnCount);
-        } else if (rc.getFlag(rc.getID()) == 10) {
-            otherPolitician = true;
-        }
-
-        if (convertPolitician) {
-            attackEC(enemy);
-        }
-        if (capturePolitician) {
-            attackEC(Team.NEUTRAL);
-        }
-
-        if (defendPolitician) {
-            System.out.println("My target LOC is " + targetLoc);
-            Util.greedyPath(targetLoc);
-            defendTheEC();
-        }
-
-        if (defendSlandererPolitician){
-            defendSlanderer();
-        }
-        if (otherPolitician){
-            // MAKE IT SAME AS MUCKRAKER ALGORITHM!!!
-            RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
-            if (attackable.length > 2) {
-                if (rc.canEmpower(actionRadius)) {
-                    rc.empower(actionRadius);
-                }
-            }
-
-//            Random rand = new Random();
-//            Direction go = directionsList.get(rand.nextInt(8));
-//            if (rc.canMove(go)) rc.move(go);
-            Util.tryMove(Util.randomDirection());
-        }
-
+        Util.greedyPath(new MapLocation(22578, 20463));
     }
 
     private static void defendSlanderer() {
-        System.out.println("Enemy ec loc at " + ecLoc);
-        System.out.println();
-        System.out.println();
-        rc.resign();
+
     }
 
     /**
