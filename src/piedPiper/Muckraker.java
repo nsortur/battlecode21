@@ -20,6 +20,9 @@ public class Muckraker extends RobotPlayer{
             ecLoc = Util.locationOfFriendlyEC();
         }
 
+        // DijkstraApplied.useDijkstra(rc.getLocation().add(Direction.NORTH).add(Direction.NORTH).add(Direction.NORTH));
+
+
         tryKillSlanderer();
         isCloseToNeutralEC();
 
@@ -176,8 +179,27 @@ public class Muckraker extends RobotPlayer{
 
                 int x_offset = neutralEC.x - ecLoc.x;
                 int y_offset = neutralEC.y - ecLoc.y;
+                int convic = robot.conviction;
+                // spawn big boi just in case we don't detect correctly
+                int dictVal = 9;
 
-                if (Util.trySetFlag(Util.encryptOffsets(x_offset, y_offset, 2))) {
+                if (convic < 72) {
+                    dictVal = 3;
+                } else if (convic < 144) {
+                    dictVal = 4;
+                } else if (convic < 215) {
+                    dictVal = 5;
+                } else if (convic < 287) {
+                    dictVal = 6;
+                } else if (convic < 358) {
+                    dictVal = 7;
+                } else if (convic < 431) {
+                    dictVal = 8;
+                } else {
+                    System.out.println("impossiblee");
+                }
+
+                if (Util.trySetFlag(Util.encryptOffsetsNeutral(x_offset, y_offset, dictVal))) {
                     return true;
                 }
             }

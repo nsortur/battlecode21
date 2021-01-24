@@ -129,6 +129,36 @@ public class Util extends RobotPlayer {
         }
     }
 
+    /**
+     * Decrypts a flag value if a neutral EC is seen
+     * @param flagVal
+     * @return the location and rough amount of conviction that EC has
+     */
+    static int[] decryptOffsetsNeutral(int flagVal) {
+        if (flagVal != -1 && flagVal != -2) {
+            int[] decrypted = new int[3];
+            int dictVal = subInt(flagVal, 0, 1);
+            int x_sign = subInt(flagVal, 1, 2);
+            int y_sign = subInt(flagVal, 4, 5);
+            int flag_x = subInt(flagVal, 2, 4) - 10;
+            int flag_y = subInt(flagVal, 5, 7) - 10;
+
+            // make them negative if necessary
+            if (x_sign == 2) flag_x = flag_x - (2 * flag_x);
+            if (y_sign == 2) flag_y = flag_y - (2 * flag_y);
+
+            decrypted[0] = flag_x;
+            decrypted[1] = flag_y;
+            decrypted[2] = dictVal;
+
+            return decrypted;
+        } else if (flagVal == -1) {
+            return new int[]{0,0,-1};
+        } else {
+            return new int[]{0,0,-2};
+        }
+    }
+
 
     /**
      * Encrypts x and y offsets into a flag value
@@ -158,6 +188,36 @@ public class Util extends RobotPlayer {
         }
 
         return concatInts(concatInts(flagX, flagY), dictVal);
+    }
+
+    /**
+     * Encrypts neutral EC conviction info and neutral EC location
+     *
+     * @param xOffset
+     * @param yOffset
+     * @param dictVal
+     * @return
+     */
+    static int encryptOffsetsNeutral(int xOffset, int yOffset, int dictVal) {
+        int flagX;
+        int flagY;
+        int xOffsetNew = Math.abs(xOffset) + 10;
+        int yOffsetNew = Math.abs(yOffset) + 10;
+
+        // set signs
+        if (xOffset < 0) {
+            flagX = concatInts(2, xOffsetNew);
+        } else {
+            flagX = concatInts(1, xOffsetNew);
+        }
+
+        if (yOffset < 0) {
+            flagY = concatInts(2, yOffsetNew);
+        } else {
+            flagY = concatInts(1, yOffsetNew);
+        }
+
+        return concatInts(dictVal, concatInts(flagX, flagY));
     }
 
     /**

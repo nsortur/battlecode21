@@ -10,6 +10,7 @@ public class EC extends RobotPlayer {
     // The location of the enemy EC
     static LinkedHashSet<MapLocation> enemyECLocs = new LinkedHashSet<>();
     static LinkedHashSet<MapLocation> neutralECLocs = new LinkedHashSet<>();
+    static LinkedHashSet<Integer> neutralECConvics = new LinkedHashSet<>();
     static ArrayList<MapLocation> capturedNeutralECs = new ArrayList<>();
 
     static int numEnlightenmentCenters = 0;
@@ -38,10 +39,9 @@ public class EC extends RobotPlayer {
         }
 
         // if found neutral EC run code to convert it
-        if (neutralECLocs.size() != 0 && rc.getInfluence() > 512) {
+        if (neutralECLocs.size() != 0 && rc.getInfluence() > neutralECConvics.iterator().next() + 30) {
             spawnCapturePols();
         }
-
 
         // spawn defensive politicians if one is lost? keep track of ID's and make sure all of them are here
         if (turnCount > 20) {
@@ -51,7 +51,7 @@ public class EC extends RobotPlayer {
         }
         System.out.println("Reached defense politician on turn " + rc.getRoundNum());
 
-        if (rc.getRoundNum() < 750) { // TODO: isFlagSet?
+        if (enemyECLocs.size() != numEnlightenmentCenters) { // TODO: isFlagSet?
             processMuckrakers();
          }
 
@@ -89,7 +89,7 @@ public class EC extends RobotPlayer {
         }
 
         System.out.println("Reached end on turn " + rc.getRoundNum());
-        bidInfluence();
+        //bidInfluence();
 
     }
 
@@ -201,8 +201,10 @@ public class EC extends RobotPlayer {
      */
     static void spawnCapturePols() throws GameActionException {
         MapLocation neutralLoc = neutralECLocs.iterator().next();
-        spawnBotToLocation(neutralLoc, 8, RobotType.POLITICIAN, 12);
-        spawnBotToLocation(neutralLoc, 8, RobotType.POLITICIAN, 500);
+        int neutralConvic = neutralECConvics.iterator().next();
+        spawnBotToLocation(neutralLoc, 8, RobotType.POLITICIAN, 23);
+        // also add 10
+        spawnBotToLocation(neutralLoc, 8, RobotType.POLITICIAN, neutralConvic + 10);
         neutralECLocs.remove(neutralLoc);
         capturedNeutralECs.add(neutralLoc);
     }
@@ -216,21 +218,42 @@ public class EC extends RobotPlayer {
         for (int id : scoutID) {
             int curFlag = Util.tryGetFlag(id);
 
-            // make sure it's in range and a flag exists
             if (curFlag != -1 && curFlag != -2) {
+                if (Util.subInt(curFlag, 0, 1) > 2) {
+                    // it's a neutral EC special flag
+                    int[] neutralFlagInfo = Util.decryptOffsetsNeutral(curFlag);
+                    MapLocation foundLoc = Util.getLocFromDecrypt(neutralFlagInfo, rc.getLocation());
+                    if (!capturedNeutralECs.contains(foundLoc)) {
+                        neutralECLocs.add(foundLoc);
+
+                        switch (neutralFlagInfo[2]) {
+                            case 3:
+                                neutralECConvics.add(72);
+                            case 4:
+                                neutralECConvics.add(144);
+                            case 5:
+                                neutralECConvics.add(215);
+                            case 6:
+                                neutralECConvics.add(287);
+                            case 7:
+                                neutralECConvics.add(358);
+                            case 8:
+                                neutralECConvics.add(431);
+                            case 9:
+                                neutralECConvics.add(500);
+                        }
+                    }
+                }
+
                 int[] flagInfo = Util.decryptOffsets(curFlag);
                 switch (flagInfo[2]) {
-                    case 0: break; // function for edge
+                    case 0:
+                        break; // function for edge
                     case 1: // attack ec using flaginfo
                         enemyECLocs.add(Util.getLocFromDecrypt(flagInfo, rc.getLocation()));
                         break;
-                    case 2:
-                        MapLocation foundLoc = Util.getLocFromDecrypt(flagInfo, rc.getLocation());
-                        if (!capturedNeutralECs.contains(foundLoc)) {
-                            neutralECLocs.add(foundLoc);
-                        }
-                        break; // capture neutral ec using flaginfo
-                    default: break;
+                    default:
+                        break;
                 }
             }
 

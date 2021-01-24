@@ -111,7 +111,7 @@ public class Politician extends RobotPlayer {
         RobotInfo[] attackable = rc.senseNearbyRobots(2, team);
         RobotInfo[] ourRobots = rc.senseNearbyRobots(2, rc.getTeam());
         for (RobotInfo robot : attackable) {
-            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && rc.canEmpower(2) && ourRobots.length < 2) {
+            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && rc.canEmpower(2) && ourRobots.length < 1) {
                 rc.empower(2);
             }
         }
