@@ -110,9 +110,6 @@ public class Politician extends RobotPlayer {
         }
     }
 
-
-    // TODO: Greedy Path DOES NOT WORK
-
     /**
      * Go towards enemy EC and kaboom
      *
@@ -148,9 +145,13 @@ public class Politician extends RobotPlayer {
     }
 
     static void defendTheEC() throws GameActionException {
-        RobotInfo[] robots = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-        if (robots.length > 6) {
-            rc.empower(rc.getType().actionRadiusSquared);
+        int action = rc.getType().actionRadiusSquared;
+
+        RobotInfo[] robots = rc.senseNearbyRobots(action, rc.getTeam().opponent());
+        if (robots.length > 2) {
+            if (rc.canEmpower(action)){
+                rc.empower(action);
+            }
         }
     }
 }

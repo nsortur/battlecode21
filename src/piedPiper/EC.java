@@ -244,17 +244,17 @@ public class EC extends RobotPlayer {
                                 neutralECConvics.add(500);
                         }
                     }
-                }
-
-                int[] flagInfo = Util.decryptOffsets(curFlag);
-                switch (flagInfo[2]) {
-                    case 0:
-                        break; // function for edge
-                    case 1: // attack ec using flaginfo
-                        enemyECLocs.add(Util.getLocFromDecrypt(flagInfo, rc.getLocation()));
-                        break;
-                    default:
-                        break;
+                } else {
+                    int[] flagInfo = Util.decryptOffsets(curFlag);
+                    switch (flagInfo[2]) {
+                        case 0:
+                            break; // function for edge
+                        case 1: // attack ec using flaginfo
+                            enemyECLocs.add(Util.getLocFromDecrypt(flagInfo, rc.getLocation()));
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
 
