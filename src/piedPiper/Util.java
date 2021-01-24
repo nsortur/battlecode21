@@ -235,6 +235,9 @@ public class Util extends RobotPlayer {
         if (loc.equals(target)){
             return; // we have arrived at location
         }
+
+        // 1. Look in optimal direction and see passability
+
         Direction direction = loc.directionTo(target);
         try {
             if (rc.isReady()) {

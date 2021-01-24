@@ -20,6 +20,9 @@ public class Muckraker extends RobotPlayer{
             ecLoc = Util.locationOfFriendlyEC();
         }
 
+        DijkstraApplied.useDijkstra(rc.getLocation().add(Direction.NORTH).add(Direction.NORTH).add(Direction.NORTH));
+
+
         tryKillSlanderer();
         isCloseToNeutralEC();
 
