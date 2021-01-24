@@ -33,6 +33,9 @@ public class EC extends RobotPlayer {
         // IMPORTANT - We cannot spawn anything on the first turn
         // The order of these functions matter, it's the priority of spawning bots
 
+        if (enemyECLocs.size() + neutralECLocs.size() + capturedNeutralECs.size() == 3) {
+            System.out.println("DONE");
+        }
         // Get the number of enlightenment centers
         if (numEnlightenmentCenters == 0) {
             getNumEC();
@@ -49,27 +52,22 @@ public class EC extends RobotPlayer {
                 isFlagSet = true;
             }
         }
-        System.out.println("Reached defense politician on turn " + rc.getRoundNum());
 
         if (enemyECLocs.size() != numEnlightenmentCenters) { // TODO: isFlagSet?
             processMuckrakers();
          }
 
-        System.out.println("Reached process muckrakers on turn " + rc.getRoundNum());
 
         // spawn scouting muckrakers and process them for info
         if (turnCount % 4 == 0 && turnCount < 1000) {
             spawnMuckrakers();
-            System.out.println("Reached spawn muckraker on turn " + rc.getRoundNum());
 
         } else if (turnCount % 7 == 0 && turnCount > 50 && turnCount < 500 && enemyECLocs.size() != 0) {
             spawnSlanderers(); // adjust flag for slanderers? direction?
             isFlagSet = true;
-            System.out.println("Reached spawn slanderer on turn " + rc.getRoundNum());
 
         } else if (turnCount % 11 == 0) {
             // spawnPoliticians(); // politicians can chase slanderers if it sees them to defend
-            System.out.println("Reached spawn politician on turn " + rc.getRoundNum());
 
         }
 
@@ -88,7 +86,6 @@ public class EC extends RobotPlayer {
             bidding += .00015;
         }
 
-        System.out.println("Reached end on turn " + rc.getRoundNum());
         //bidInfluence();
 
     }
@@ -244,17 +241,17 @@ public class EC extends RobotPlayer {
                                 neutralECConvics.add(500);
                         }
                     }
-                }
-
-                int[] flagInfo = Util.decryptOffsets(curFlag);
-                switch (flagInfo[2]) {
-                    case 0:
-                        break; // function for edge
-                    case 1: // attack ec using flaginfo
-                        enemyECLocs.add(Util.getLocFromDecrypt(flagInfo, rc.getLocation()));
-                        break;
-                    default:
-                        break;
+                } else {
+                    int[] flagInfo = Util.decryptOffsets(curFlag);
+                    switch (flagInfo[2]) {
+                        case 0:
+                            break; // function for edge
+                        case 1: // attack ec using flaginfo
+                            enemyECLocs.add(Util.getLocFromDecrypt(flagInfo, rc.getLocation()));
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
 

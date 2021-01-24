@@ -2,8 +2,6 @@ package piedPiper;
 
 import battlecode.common.*;
 
-import java.util.ArrayList;
-
 public class Slanderer extends RobotPlayer {
     static int ecID;
     static MapLocation ecLoc;

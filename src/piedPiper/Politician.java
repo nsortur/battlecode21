@@ -3,7 +3,6 @@ package piedPiper;
 import battlecode.common.*;
 
 import java.util.HashSet;
-import java.util.Random;
 
 // 4 Types of Politcians
 // 1. Convert Politicians - given a location - go there and convert (flag code of 5)
@@ -36,7 +35,6 @@ public class Politician extends RobotPlayer {
             ecID = Util.getECID();
             ecLoc = Util.locationOfFriendlyEC();
             checkRole();
-            System.out.println("the flag i put out was to: " + targetLoc + " on turn " + turnCount);
         } else if (rc.getFlag(rc.getID()) == 10) {
             otherPolitician = true;
         }
@@ -57,7 +55,6 @@ public class Politician extends RobotPlayer {
         }
 
         if (defendPolitician) {
-            System.out.println("My target LOC is " + targetLoc);
             Util.greedyPath(targetLoc);
             defendTheEC();
         }
@@ -142,7 +139,6 @@ public class Politician extends RobotPlayer {
                 rc.empower(4);
             }
         }
-        System.out.println("Going to: " + targetLoc);
         Util.greedyPath(targetLoc);
 
     }
