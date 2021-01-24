@@ -231,80 +231,55 @@ public class Util extends RobotPlayer {
      * @throws GameActionException
      */
     static void greedyPath(MapLocation target) throws GameActionException {
-        MapLocation loc = rc.getLocation();
-        if (loc.equals(target)){
+        MapLocation currentLocation = rc.getLocation();
+        if (currentLocation.equals(target)) {
             return; // we have arrived at location
         }
-        Direction direction = loc.directionTo(target);
-        try {
-            if (rc.isReady()) {
-                Hashtable<Integer, Direction> areas = new Hashtable<>();
-                for (int i = 0; i < 3; i++) {
-                    areas.put(i, directionsList.get(Math.abs((directionsList.indexOf(direction) - 1 + i) % directionsList.size())));
+
+        if (rc.isReady()){
+            Direction direction = currentLocation.directionTo(target);
+            List<Double> passabilities = new ArrayList<>();
+            List<Direction> possibleDirections = new ArrayList<>();
+
+            // add 3 possible directions, list may be empty
+            for (int i = 0; i < 3; i++) {
+                Direction localDirection = directionsList.get(Math.abs
+                        ((directionsList.indexOf(direction) - 1 + i) % directionsList.size()));
+                if(rc.canMove(localDirection) && rc.onTheMap(rc.getLocation().add(localDirection))){
+                    passabilities.add(rc.sensePassability(rc.getLocation().add(localDirection)));
+                    possibleDirections.add(localDirection);
                 }
-                HashMap<Double, MapLocation> possibleDirections = new HashMap<>();
-                for (int i = 0; i < 3; i++) {
-                    if (rc.onTheMap(rc.getLocation().add(areas.get(i)))){
+            }
 
-                        possibleDirections.put(rc.sensePassability(loc.add(areas.get(i))), loc.add(areas.get(i)));
-                    }
+            // if the difference of the optimal direction and other shortest is <= .1
+            if (passabilities.size() > 1 && rc.canMove(direction) && rc.onTheMap(rc.getLocation().add(direction))){
+                Direction wouldMoveTo = possibleDirections.get(passabilities.indexOf(Collections.max(passabilities)));
+                if (Math.abs(
+                        rc.sensePassability(rc.getLocation().add(direction)) -
+                        rc.sensePassability(rc.getLocation().add(wouldMoveTo))) <= .1){
+                    Util.tryMove(direction);
+                    return;
                 }
-                List keys = new ArrayList(possibleDirections.keySet());
-                Collections.sort(keys);
+            }
+            // if you can move in one of the directions, move with the one in the highest passability
+            if (!passabilities.isEmpty()){
+                Direction wouldMoveTo = possibleDirections.get(passabilities.indexOf(Collections.max(passabilities)));
+                Util.tryMove(wouldMoveTo);
+                return;
+            }
 
-                try {
-                    MapLocation loc1 = possibleDirections.get(keys.get(2));
-                    Direction posDir1 = loc.directionTo(loc1);
-
-                    MapLocation loc2 = possibleDirections.get(keys.get(1));
-                    Direction posDir2 = loc.directionTo(loc2);
-
-                    MapLocation loc3 = possibleDirections.get(keys.get(0));
-                    Direction posDir3 = loc.directionTo(loc3);
-
-                    if (tryMove(posDir1)) {
-                        // you moved!
-                    } else if (tryMove(posDir2)) {
-                        // you moved there!
-                    } else if (tryMove(posDir3)) {
-                        // you moved here!
-                    } else {
-                        for (Direction value : directionsList) {
-                            if (rc.canMove(value)) {
-                                rc.move(value);
-                            }
-                        }
-                    }
-                } catch (Exception q) {
-                    try {
-                        MapLocation loc2 = possibleDirections.get(keys.get(1));
-                        Direction posDir2 = loc.directionTo(loc2);
-
-                        if (tryMove(posDir2)) {
-                            // moved
-                        }
-                    } catch (Exception m) {
-                        try {
-                            MapLocation loc3 = possibleDirections.get(keys.get(0));
-                            Direction posDir3 = loc.directionTo(loc3);
-
-                            if (tryMove(posDir3)) {
-                                // moved
-                            } else {
-                                // blocked off
-                            }
-
-                        } catch (Exception v) {
-                            // inner catch
-                        }
+            // move in random directions
+            if (passabilities.isEmpty()){
+                for (int i = 0; i < 16; i++) {
+                    if (rc.canMove(randomDirection())){
+                        rc.move(randomDirection());
+                        return;
                     }
                 }
             }
-        } catch (Exception e) {
-            // outer error
         }
-
     }
+
 
     /**
      * Calculates a new location in the direction you want based on how many tiles
