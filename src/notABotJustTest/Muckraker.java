@@ -15,8 +15,11 @@ public class Muckraker extends RobotPlayer {
             ecID = Util.getECID();
             ecLoc = Util.locationOfFriendlyEC();
         }
+        System.out.println(Clock.getBytecodesLeft() + " before");
+
+        System.out.println(Clock.getBytecodesLeft() + " after");
+
         tryKillSlanderer();
-        Util.greedyPath(Util.calculateNewLocationWithDirection(Direction.SOUTH, 10, ecLoc));
     }
 
     /**

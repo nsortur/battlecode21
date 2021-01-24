@@ -2,6 +2,7 @@ package piedPiper;
 
 import battlecode.common.*;
 
+import java.util.HashSet;
 import java.util.Random;
 
 // 4 Types of Politcians
@@ -22,7 +23,10 @@ public class Politician extends RobotPlayer {
     static MapLocation targetLoc;
 
     static boolean convertPolitician = false;
+
     static boolean capturePolitician = false;
+    static int otherID;
+
     static boolean defendPolitician = false;
     static boolean defendSlandererPolitician = false;
     static boolean otherPolitician = false;
@@ -41,6 +45,14 @@ public class Politician extends RobotPlayer {
             attackEC(enemy);
         }
         if (capturePolitician) {
+            RobotInfo[] robots = rc.senseNearbyRobots(rc.getType().sensorRadiusSquared, rc.getTeam());
+            for (RobotInfo robot : robots) {
+                if (otherID == 0) {
+                    if (robot.influence == 23) {
+                        otherID = robot.ID;
+                    }
+                }
+            }
             attackEC(Team.NEUTRAL);
         }
 
@@ -110,11 +122,19 @@ public class Politician extends RobotPlayer {
 
         RobotInfo[] attackable = rc.senseNearbyRobots(2, team);
         RobotInfo[] ourRobots = rc.senseNearbyRobots(2, rc.getTeam());
+        HashSet<RobotInfo> ourRobotsNew = new HashSet<>();
+        for (RobotInfo robot : ourRobots) {
+            if (robot.ID != otherID) {
+                ourRobotsNew.add(robot);
+            }
+        }
+        System.out.println(ourRobotsNew);
         for (RobotInfo robot : attackable) {
-            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && rc.canEmpower(2) && ourRobots.length < 1) {
+            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && rc.canEmpower(2) && ourRobotsNew.size() < 1) {
                 rc.empower(2);
             }
         }
+
         if (rc.canDetectLocation(targetLoc)) {
             RobotInfo maybeNeutralEC = rc.senseRobotAtLocation(targetLoc);
             int distToEC = rc.getLocation().distanceSquaredTo(targetLoc);

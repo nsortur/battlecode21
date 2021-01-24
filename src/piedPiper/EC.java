@@ -206,6 +206,7 @@ public class EC extends RobotPlayer {
         // also add 10
         spawnBotToLocation(neutralLoc, 8, RobotType.POLITICIAN, neutralConvic + 10);
         neutralECLocs.remove(neutralLoc);
+        neutralECConvics.remove(neutralConvic);
         capturedNeutralECs.add(neutralLoc);
     }
 

@@ -16,7 +16,10 @@ public class EC extends RobotPlayer {
     static HashSet<Integer> scoutID = new HashSet<>();
 
     static void run() throws GameActionException {
-        spawnMuckrakers();
+        spawnBot(RobotType.MUCKRAKER, Direction.NORTHEAST, 1);
+        spawnBot(RobotType.MUCKRAKER, Direction.EAST, 1);
+        spawnBot(RobotType.MUCKRAKER, Direction.SOUTHEAST, 1);
+
     }
 
     static void spawnPoliticians() throws GameActionException {
