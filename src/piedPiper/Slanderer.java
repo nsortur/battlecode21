@@ -37,16 +37,23 @@ public class Slanderer extends RobotPlayer {
     }
 
     static void moveAwaySlanderer(Direction dir) throws GameActionException {
-        int index = directionsList.indexOf(dir);
-        MapLocation locToMove = rc.adjacentLocation(dir);
+        if (EC.isSurrounded()) return;
+            int index = directionsList.indexOf(dir);
+            if (rc.getRoundNum() >= 650){
+                System.out.println(dir);
+                System.out.println(rc.adjacentLocation(dir));
+            }
+            if (rc.onTheMap(rc.adjacentLocation(dir))){
+                MapLocation locToMove = rc.adjacentLocation(dir);
 
-        if ((rc.onTheMap(locToMove) && !rc.isLocationOccupied(locToMove))) {
-            Util.tryMove(dir);
-            // System.out.println("Direction it moved: " + dir);
+                if ((rc.onTheMap(locToMove) && !rc.isLocationOccupied(locToMove))) {
+                    Util.tryMove(dir);
+                    // System.out.println("Direction it moved: " + dir);
 
-        } else {
-            moveAwaySlanderer(directionsList.get((index+1) % 8));
-        }
+                } else{
+                    moveAwaySlanderer(directionsList.get((index + 1) % 8));
+                }
+            }
     }
 
     /**

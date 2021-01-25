@@ -166,7 +166,7 @@ public class EC extends RobotPlayer {
     // TODO: bidding if surrounded
 
 
-    private static boolean isSurrounded() throws GameActionException {
+    public static boolean isSurrounded() throws GameActionException {
 
         for (Direction direction : directionsList) {
             if (!rc.onTheMap(rc.getLocation().add(direction)))
