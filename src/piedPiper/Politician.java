@@ -39,17 +39,6 @@ public class Politician extends RobotPlayer {
 
 
     static void run() throws GameActionException {
-        if (!capturePolitician || !defendPolitician) {
-            if (rc.getEmpowerFactor(rc.getTeam(), 0) > 1.5) {
-                RobotInfo[] robots = rc.senseNearbyRobots();
-                if (robots.length >= 2) {
-                    if (rc.isReady()) {
-                        rc.empower(actionRadius);
-                    }
-                }
-            }
-        }
-
         if (turnCount == 1 && rc.getFlag(rc.getID()) == 0) {
             ecID = Util.getECID();
             ecLoc = Util.locationOfFriendlyEC();
