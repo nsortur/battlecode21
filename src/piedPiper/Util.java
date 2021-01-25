@@ -369,5 +369,4 @@ public class Util extends RobotPlayer {
     static int[] getOffsetsFromLoc(MapLocation curLoc, MapLocation destLoc) {
         return new int[]{destLoc.x - curLoc.x, destLoc.y - curLoc.y};
     }
-
 }

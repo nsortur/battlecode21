@@ -10,8 +10,10 @@ public class EC extends RobotPlayer {
     // The location of the enemy EC
     static LinkedHashSet<MapLocation> enemyECLocs = new LinkedHashSet<>();
     static LinkedHashSet<MapLocation> neutralECLocs = new LinkedHashSet<>();
-    static LinkedHashSet<Integer> neutralECConvics = new LinkedHashSet<>();
+    static ArrayList<Integer> neutralECConvics = new ArrayList<>();
+    static ArrayList<MapLocation> detectedNeutralECConvics = new ArrayList<>();
     static ArrayList<MapLocation> capturedNeutralECs = new ArrayList<>();
+
 
     static int numEnlightenmentCenters = 0;
     static int stuck = 0;
@@ -22,10 +24,16 @@ public class EC extends RobotPlayer {
     static int[] polID = new int[4];
 
     // bidding variables
-    static int previousVoteNum = 0;
+    static double percentage = .01;
     static int cap = 2;
 
     static boolean wasFlagSet = false;
+
+    static String[] smsmsp = {"S", "M", "S", "M", "S", "P"};
+    static String[] smmp = {"S", "M", "M", "P", "S", "M", "M", "p"};
+    static String[] sppm = {"S", "P", "P", "M"};
+
+    static int indexTroop = 0;
 
     // TODO: Fix neutral EC bugs (Neel)
     // TODO: Replenish defendPoliticians
@@ -41,45 +49,25 @@ public class EC extends RobotPlayer {
             getNumEC();
         }
 
-        // spawn defensive politicians if one is lost? keep track of ID's and make sure all of them are here
-        if (turnCount > 20) {
-            if (checkIfStillDefensePoliticians()) {
-                System.out.println("Set flag in defense to true");
-                isFlagSet = true;
-                wasFlagSet = true;
-            }
-        }
-
-        // if found neutral EC run code to convert it
-        if (neutralECLocs.size() != 0 && rc.getInfluence() > neutralECConvics.iterator().next() + 30 && !isFlagSet) {
-            spawnCapturePols();
-            System.out.println("Set flag in capture to true");
-            isFlagSet = true;
-            wasFlagSet = true;
-        }
-
+        // process mucks
         if (enemyECLocs.size() != numEnlightenmentCenters) {
             processMuckrakers();
-         }
-
-
-        // spawn scouting muckrakers and process them for info
-        if (turnCount % 4 == 0 && turnCount < 1000) {
-            spawnMuckrakers();
-
-        } else if (turnCount % 7 == 0 && turnCount > 50 && turnCount < 500 && enemyECLocs.size() != 0 && !isFlagSet) {
-            spawnSlanderers(); // adjust flag for slanderers? direction?
-            System.out.println("Set flag in slanderers to true");
-
-            isFlagSet = true;
-            wasFlagSet = true;
-        } else if (turnCount % 11 == 0) {
-            // spawnPoliticians(); // politicians can chase slanderers if it sees them to defend
-
         }
 
 
-        if (!isFlagSet && enemyECLocs.size() != 0 && !wasFlagSet && rc.getRoundNum() > 400) {
+        // if found neutral EC run code to convert it
+        if (neutralECLocs.size() != 0 && rc.getInfluence() > neutralECConvics.iterator().next() + 30) {
+            spawnCapturePols();
+            isFlagSet = true;
+            wasFlagSet = true;
+        }
+
+        System.out.println(numEnlightenmentCenters + " and " + enemyECLocs.size());
+
+        if (turnCount > 1) isFlagSet = spawnTroop();
+
+
+        if (!isFlagSet && enemyECLocs.size() != 0 && !wasFlagSet) {
             MapLocation enemyECToTarget = enemyECLocs.iterator().next();
             int[] offsets = Util.getOffsetsFromLoc(rc.getLocation(), enemyECToTarget);
             Util.trySetFlag(Util.encryptOffsets(offsets[0], offsets[1], 7));
@@ -88,19 +76,81 @@ public class EC extends RobotPlayer {
 
         wasFlagSet = isFlagSet;
 
-          //  System.out.println("Reached end on turn " + rc.getRoundNum());
-        /*
-           if (isSurrounded()){
+
+
+        if (isSurrounded()) {
                bidSurrounded();
            }
            else{
                stuck = 0;
                bidInfluence();
            }
-         */
 
 
+    }
 
+    // TODO:
+    // 2. Have all politicians that spawn with 25 influence guard then after 30 turns advance
+    // 4. Create targeted muckrakers
+
+    private static boolean spawnTroop() throws GameActionException {
+        if (neutralECLocs.size() + capturedNeutralECs.size() == 0) {
+            if (rc.getInfluence() > 70) {
+                spawnSlanderers(rc.getInfluence()-1);
+            } else {
+                spawnMuckrakers(1);
+            }
+        } else {
+            String troopToSpawn = "S";
+            if (turnCount > 700) {
+                troopToSpawn = sppm[indexTroop % 4];
+            } else if (turnCount > 400) {
+                troopToSpawn = smmp[indexTroop % 8];
+            } else {
+                troopToSpawn = smsmsp[indexTroop % 6];
+            }
+
+            if (rc.isReady()) {
+                switch (troopToSpawn) {
+                    case "S":
+                        spawnSlanderers((int) (0.75 * rc.getInfluence()));
+                    case "P":
+                        spawnPoliticians(25);
+                    case "M":
+                        spawnMuckrakers(1);
+                    case "p":
+                        if (rc.getInfluence() > 800) {
+                            if (enemyECLocs.size() != 0) {
+                                spawnBotToLocation(randomElement(enemyECLocs), 5, RobotType.POLITICIAN, (int) (0.5 * rc.getInfluence()));
+                            } else {
+                                spawnPoliticians(25);
+                            }
+                            wasFlagSet = true;
+                            return true;
+                        } else {
+                            spawnPoliticians(25);
+                        }
+                }
+
+                indexTroop += 1;
+            }
+        }
+
+        return false;
+
+    }
+
+    private static MapLocation randomElement(HashSet<MapLocation> set) {
+        int size = set.size();
+        int item = new Random().nextInt(size); // In real life, the Random object should be rather more shared than this
+        int i = 0;
+        for(MapLocation obj : set)
+        {
+            if (i == item)
+                return obj;
+            i++;
+        }
+        return set.iterator().next();
     }
 
     private static void bidSurrounded() throws GameActionException {
@@ -118,7 +168,7 @@ public class EC extends RobotPlayer {
     // TODO: bidding if surrounded
 
 
-    private static boolean isSurrounded() throws GameActionException {
+    public static boolean isSurrounded() throws GameActionException {
 
         for (Direction direction : directionsList) {
             if (!rc.onTheMap(rc.getLocation().add(direction)))
@@ -131,44 +181,20 @@ public class EC extends RobotPlayer {
         return true;
     }
 
+
     static void bidInfluence() throws GameActionException {
         if (rc.getTeamVotes() > 751){
             return;
         }
-
-        if (rc.getRoundNum() < 450) {
-            if (rc.canBid(cap)){
-                rc.bid(cap);
-            }
-
-        } else if (rc.getRoundNum() < 1250) {
-            if (previousVoteNum == rc.getTeamVotes()) {
-                cap += 2;
-            }
-            int influenceBid = (int) (0.1 * rc.getInfluence());
-            if (influenceBid > cap) {
-                if (rc.canBid(influenceBid)){
-                    rc.bid(influenceBid);
-                }
-
-            } else {
-                if (rc.canBid(influenceBid)){
-                    rc.bid(influenceBid);
-                }
-
-
-            }
-        } else {
-            int influenceBid = (int) (0.1 * rc.getInfluence());
-
-            if (rc.canBid(influenceBid)){
-                rc.bid(influenceBid);
-            }
-
+        if (rc.getRoundNum() > 500){
+            percentage += .001;
         }
-
-        previousVoteNum = rc.getTeamVotes();
-
+        int toBid = (int) (rc.getInfluence() * percentage);
+        if (toBid > 200 && rc.getRoundNum() < 850){
+            rc.bid(200);
+            return;
+        }
+        if (rc.canBid(toBid)) rc.bid(toBid);
 
     }
 
@@ -197,8 +223,11 @@ public class EC extends RobotPlayer {
     }
 
 
-    static void spawnPoliticians() throws GameActionException {
-        spawnBot(RobotType.POLITICIAN, getOpenDirection(), 15);
+    static void spawnPoliticians(int infl) throws GameActionException {
+        Direction dir = getOpenDirection();
+        if (dir != null) {
+            spawnBot(RobotType.POLITICIAN, dir, infl); // if infl is very high make big boy politician and convert
+        }
     }
 
     /**
@@ -207,12 +236,11 @@ public class EC extends RobotPlayer {
      * @throws GameActionException
      */
 
-    static void spawnSlanderers() throws GameActionException {
-        // we can spawn it based on influence - 71 influence go one direction, 72 influence go another
-        spawnBotToLocation(enemyECLocs.iterator().next(), 4, RobotType.SLANDERER, 40); // TODO: influence
-
-        // communicate direction
-
+    static void spawnSlanderers(int infl) throws GameActionException {
+        Direction dir = getOpenDirection();
+        if (dir != null) {
+            spawnBot(RobotType.SLANDERER, getOpenDirection(), infl); // change?
+        }
     }
 
     /**
@@ -220,10 +248,10 @@ public class EC extends RobotPlayer {
      *
      * @throws GameActionException
      */
-    static void spawnMuckrakers() throws GameActionException {
+    static void spawnMuckrakers(int infl) throws GameActionException {
         Direction dir = getOpenDirection();
         if (dir != null) {
-            if (spawnBot(RobotType.MUCKRAKER, dir, 1)) {
+            if (spawnBot(RobotType.MUCKRAKER, dir, infl)) {
                 scoutID.add(rc.senseRobotAtLocation(rc.adjacentLocation(dir)).ID);
             }
         }
@@ -242,7 +270,7 @@ public class EC extends RobotPlayer {
         // also add 10
         spawnBotToLocation(neutralLoc, 8, RobotType.POLITICIAN, neutralConvic + 10);
         neutralECLocs.remove(neutralLoc);
-        neutralECConvics.remove(neutralConvic);
+        neutralECConvics.remove(neutralECConvics.iterator().next());
         capturedNeutralECs.add(neutralLoc);
     }
 
@@ -260,24 +288,31 @@ public class EC extends RobotPlayer {
                     // it's a neutral EC special flag
                     int[] neutralFlagInfo = Util.decryptOffsetsNeutral(curFlag);
                     MapLocation foundLoc = Util.getLocFromDecrypt(neutralFlagInfo, rc.getLocation());
-                    if (!capturedNeutralECs.contains(foundLoc)) {
+                    if (!detectedNeutralECConvics.contains(foundLoc)) {
                         neutralECLocs.add(foundLoc);
+                        detectedNeutralECConvics.add(foundLoc);
 
                         switch (neutralFlagInfo[2]) {
                             case 3:
                                 neutralECConvics.add(72);
+                                break;
                             case 4:
                                 neutralECConvics.add(144);
+                                break;
                             case 5:
                                 neutralECConvics.add(215);
+                                break;
                             case 6:
                                 neutralECConvics.add(287);
+                                break;
                             case 7:
                                 neutralECConvics.add(358);
+                                break;
                             case 8:
                                 neutralECConvics.add(431);
                             case 9:
                                 neutralECConvics.add(500);
+                                break;
                         }
                     }
                 } else {

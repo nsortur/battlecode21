@@ -100,7 +100,7 @@ public class Muckraker extends RobotPlayer {
         } else if (robot.team == rc.getTeam().opponent() && robot.type == RobotType.POLITICIAN) {
             return 2;
         } else if (robot.team == rc.getTeam().opponent() && robot.type == RobotType.SLANDERER) {
-            return -15;
+            return -100000;
         } else {
             return 0;
         }
@@ -267,8 +267,6 @@ public class Muckraker extends RobotPlayer {
                     dictVal = 7;
                 } else if (convic < 431) {
                     dictVal = 8;
-                } else {
-                    System.out.println("impossible");
                 }
 
                 if (Util.trySetFlag(Util.encryptOffsetsNeutral(x_offset, y_offset, dictVal))) {
