@@ -27,8 +27,8 @@ public class EC extends RobotPlayer {
 
     static boolean wasFlagSet = false;
 
-    static String[] smmp = {"S", "M", "M", "P"};
-    static String[] sppm = {"S", "P", "P", "M"};
+    static String[] smmp = {"S", "M", "M", "P", "S", "M", "M", "p"};
+    static String[] sppm = {"S", "P", "P", "m"};
 
     static int indexTroop = 0;
 
@@ -37,7 +37,6 @@ public class EC extends RobotPlayer {
 
     static void run() throws GameActionException {
         boolean isFlagSet = false;
-        System.out.println("Was set flag is" + wasFlagSet);
         // IMPORTANT - We cannot spawn anything on the first turn
         // The order of these functions matter, it's the priority of spawning bots
 
@@ -53,19 +52,18 @@ public class EC extends RobotPlayer {
 
 
         // if found neutral EC run code to convert it
-        if (neutralECLocs.size() != 0 && rc.getInfluence() > neutralECConvics.iterator().next() + 30 && !isFlagSet) {
+        if (neutralECLocs.size() != 0 && rc.getInfluence() > neutralECConvics.iterator().next() + 30) {
             spawnCapturePols();
-            System.out.println("Set flag in capture to true");
             isFlagSet = true;
             wasFlagSet = true;
         }
 
-        System.out.println(numEnlightenmentCenters + " and " + enemyECLocs.size());
+        // System.out.println(numEnlightenmentCenters + " and " + enemyECLocs.size());
 
-        if (turnCount > 1) spawnTroop();
+        if (turnCount > 1) isFlagSet = spawnTroop();
 
 
-        if (!isFlagSet && enemyECLocs.size() != 0 && !wasFlagSet && rc.getRoundNum() > 400) {
+        if (!isFlagSet && enemyECLocs.size() != 0 && !wasFlagSet) {
             MapLocation enemyECToTarget = enemyECLocs.iterator().next();
             int[] offsets = Util.getOffsetsFromLoc(rc.getLocation(), enemyECToTarget);
             Util.trySetFlag(Util.encryptOffsets(offsets[0], offsets[1], 7));
@@ -92,42 +90,84 @@ public class EC extends RobotPlayer {
     // TODO:
     // 1. Add slanderer move away functionality (checkerboard?)
     // 2. Have all politicians that spawn with 25 influence guard then after 30 turns advance
-    // 3. Spawn attack/roam politicians and add functionality for them (keep it same as other politician now but with more empowering)
+    // 3. Spawn attack politicians and add functionality for them (keep it same as other politician now but with more empowering)
     // 4. Create targeted muckrakers
     // 5. Wait to gather influence if need to convert neutral EC
 
-    private static void spawnTroop() throws GameActionException {
+    private static boolean spawnTroop() throws GameActionException {
 
         String troopToSpawn = "S";
-        if (turnCount > 700) {
+        if (turnCount > 500) {
             troopToSpawn = sppm[indexTroop % 4];
         } else {
-            troopToSpawn = smmp[indexTroop % 4];
+            troopToSpawn = smmp[indexTroop % 8];
         }
 
-        if (rc.isReady()) {
-            Direction dir = getOpenDirection();
 
+        System.out.println("Troop it should spawn " + troopToSpawn);
+
+        if (rc.isReady()) {
             switch (troopToSpawn) {
                 case "S":
-                    if (dir != null) {
-                        spawnBot(RobotType.SLANDERER, getOpenDirection(), (int) (0.75 * rc.getInfluence())); // change?
-                    }
+                    int infl = (int) (0.75 * rc.getInfluence());
+                    if (spawnSlanderers(infl)) indexTroop += 1;
+                    System.out.println("Spawned slanderer with " + infl);
+                    return false;
                 case "P":
-                    if (dir != null) {
-                        spawnBot(RobotType.POLITICIAN, dir, 25); // if infl is very high make big boy politician and convert
-                    }
+                    if (spawnPoliticians(25)) indexTroop += 1;
+                    System.out.println("Spawned politician with " + 25);
+                    return false;
+
                 case "M":
-                    if (dir != null) {
-                        if (spawnBot(RobotType.MUCKRAKER, dir, 1)) {
-                            scoutID.add(rc.senseRobotAtLocation(rc.adjacentLocation(dir)).ID);
+                    if (spawnMuckrakers(1)) indexTroop += 1;
+                    System.out.println("Spawned muck with " + 1);
+                    return false;
+                case "m":
+                    if (rc.getInfluence() > 400) {
+                        if (spawnMuckrakers((int) (0.1 * rc.getInfluence()))) indexTroop+=1;
+                    } else {
+                        if (spawnMuckrakers(1)) indexTroop+=1;
+                    }
+                    return false;
+                case "p":
+                    if (rc.getInfluence() > 800) {
+                        if (enemyECLocs.size() != 0) {
+                            int inflPol = (int) (0.5 * rc.getInfluence());
+                            spawnBotToLocation(randomElement(enemyECLocs), 5, RobotType.POLITICIAN, inflPol);
+                            System.out.println("Spawned big pol with " + inflPol);
+                            indexTroop += 1;
+                            wasFlagSet = true;
+                            return true;
+                        } else {
+                            int inflNewPol = (int) (0.4 * rc.getInfluence());
+                            if (spawnPoliticians(inflNewPol)) indexTroop += 1;
+                            System.out.println("Spawned med pol with " + inflNewPol);
+                            return false;
                         }
+                    } else {
+                        if (spawnPoliticians(25)) indexTroop += 1;
+                        System.out.println("Spawned politician with " + 25);
+                        return false;
                     }
             }
 
-            indexTroop += 1;
         }
 
+        return false;
+
+    }
+
+    private static MapLocation randomElement(HashSet<MapLocation> set) {
+        int size = set.size();
+        int item = new Random().nextInt(size); // In real life, the Random object should be rather more shared than this
+        int i = 0;
+        for(MapLocation obj : set)
+        {
+            if (i == item)
+                return obj;
+            i++;
+        }
+        return set.iterator().next();
     }
 
     private static void bidSurrounded() throws GameActionException {
@@ -224,8 +264,12 @@ public class EC extends RobotPlayer {
     }
 
 
-    static void spawnPoliticians() throws GameActionException {
-        spawnBot(RobotType.POLITICIAN, getOpenDirection(), 15);
+    static boolean spawnPoliticians(int infl) throws GameActionException {
+        Direction dir = getOpenDirection();
+        if (dir != null) {
+            return spawnBot(RobotType.POLITICIAN, dir, infl); // if infl is very high make big boy politician and convert
+        }
+        return false;
     }
 
     /**
@@ -234,12 +278,12 @@ public class EC extends RobotPlayer {
      * @throws GameActionException
      */
 
-    static void spawnSlanderers() throws GameActionException {
-        // we can spawn it based on influence - 71 influence go one direction, 72 influence go another
-        spawnBotToLocation(enemyECLocs.iterator().next(), 4, RobotType.SLANDERER, 40); // TODO: influence
-
-        // communicate direction
-
+    static boolean spawnSlanderers(int infl) throws GameActionException {
+        Direction dir = getOpenDirection();
+        if (dir != null) {
+            return spawnBot(RobotType.SLANDERER, getOpenDirection(), infl); // change?
+        }
+        return false;
     }
 
     /**
@@ -247,13 +291,15 @@ public class EC extends RobotPlayer {
      *
      * @throws GameActionException
      */
-    static void spawnMuckrakers() throws GameActionException {
+    static boolean spawnMuckrakers(int infl) throws GameActionException {
         Direction dir = getOpenDirection();
         if (dir != null) {
-            if (spawnBot(RobotType.MUCKRAKER, dir, 1)) {
+            if (spawnBot(RobotType.MUCKRAKER, dir, infl)) {
                 scoutID.add(rc.senseRobotAtLocation(rc.adjacentLocation(dir)).ID);
+                return true;
             }
         }
+        return false;
 
     }
 

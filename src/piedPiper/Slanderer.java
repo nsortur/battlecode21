@@ -25,13 +25,28 @@ public class Slanderer extends RobotPlayer {
             dir = calculateOptimalDirection();
         }
 
-        Util.greedyPath(new MapLocation(26538, 23910));
+
         // Slanderer has one purpose, go in general direction away from enemy EC (flag code of 9)
         // create by giving enemy EC location
-        // general goal is to go in opposite direction - +1 or -1 but stay away
+        // general goal is to go in opposite direction - +1 or -1 but stay away'
+        checkFlag();
 
+        moveAwaySlanderer(moveAwayV3());
 
         // politicians make sure that
+    }
+
+    static void moveAwaySlanderer(Direction dir) throws GameActionException {
+        int index = directionsList.indexOf(dir);
+        MapLocation locToMove = rc.adjacentLocation(dir);
+
+        if ((rc.onTheMap(locToMove) && !rc.isLocationOccupied(locToMove))) {
+            Util.tryMove(dir);
+            // System.out.println("Direction it moved: " + dir);
+
+        } else {
+            moveAwaySlanderer(directionsList.get((index+1) % 8));
+        }
     }
 
     /**
@@ -125,20 +140,12 @@ public class Slanderer extends RobotPlayer {
     static void checkFlag() throws GameActionException {
         int[] ecFlagInfo = Util.decryptOffsets(Util.tryGetFlag(ecID));
 
-        if (ecFlagInfo[2] == 4) {
+        if (ecFlagInfo[2] == 7) {
             enemyECLoc = Util.getLocFromDecrypt(ecFlagInfo, ecLoc);
         }
     }
 
 
-    static void appliedMoveAwayV3() throws GameActionException {
-        if (rc.onTheMap(rc.getLocation().add(dir)) && !rc.isLocationOccupied(rc.getLocation().add(dir))) {
-            Util.tryMove(dir);
-        } else {
-            dir = moveAwayV3();
-            Util.tryMove(dir);
-        }
-    }
 
     static Direction moveAwayV3() throws GameActionException {
         int[] ranking = new int[8];
@@ -190,9 +197,14 @@ public class Slanderer extends RobotPlayer {
         if (!rc.onTheMap(location)) {
             return -1000;
         }
+        if (enemyECLoc != null) {
+            if (rc.getLocation().distanceSquaredTo(enemyECLoc) < location.distanceSquaredTo(enemyECLoc)) {
+                return -400;
+            }
+        }
         RobotInfo robot = rc.senseRobotAtLocation(location);
         if (robot == null) {
-            return 0;
+            return 5;
         } else if (robot.type == RobotType.ENLIGHTENMENT_CENTER && (robot.team == Team.NEUTRAL || robot.team == rc.getTeam())) {
             return 10000;
         } else if (robot.team == rc.getTeam() & robot.type == RobotType.SLANDERER) {
@@ -200,7 +212,7 @@ public class Slanderer extends RobotPlayer {
         } else if (robot.team == rc.getTeam().opponent() && robot.type == RobotType.POLITICIAN || robot.type == RobotType.MUCKRAKER) {
             return 10000;
         } else if (robot.team == rc.getTeam() && robot.type == RobotType.POLITICIAN) {
-            return 100;
+            return -25;
         } else {
             return 0;
         }
