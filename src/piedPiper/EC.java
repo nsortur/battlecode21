@@ -14,7 +14,7 @@ public class EC extends RobotPlayer {
     static ArrayList<MapLocation> capturedNeutralECs = new ArrayList<>();
 
     static int numEnlightenmentCenters = 0;
-    static double bidding = 0.15;
+    static int stuck = 0;
     // ID's of the scout's
     static LinkedHashSet<Integer> scoutID = new LinkedHashSet<>();
 
@@ -25,11 +25,14 @@ public class EC extends RobotPlayer {
     static int previousVoteNum = 0;
     static int cap = 2;
 
+    static boolean wasFlagSet = false;
+
     // TODO: Fix neutral EC bugs (Neel)
     // TODO: Replenish defendPoliticians
 
     static void run() throws GameActionException {
         boolean isFlagSet = false;
+        System.out.println("Was set flag is" + wasFlagSet);
         // IMPORTANT - We cannot spawn anything on the first turn
         // The order of these functions matter, it's the priority of spawning bots
 
@@ -38,59 +41,94 @@ public class EC extends RobotPlayer {
             getNumEC();
         }
 
-        // if found neutral EC run code to convert it
-        if (neutralECLocs.size() != 0 && rc.getInfluence() > neutralECConvics.iterator().next() + 30) {
-            spawnCapturePols();
-        }
-
         // spawn defensive politicians if one is lost? keep track of ID's and make sure all of them are here
         if (turnCount > 20) {
             if (checkIfStillDefensePoliticians()) {
+                System.out.println("Set flag in defense to true");
                 isFlagSet = true;
+                wasFlagSet = true;
             }
         }
-        System.out.println("Reached defense politician on turn " + rc.getRoundNum());
 
-        if (enemyECLocs.size() != numEnlightenmentCenters) { // TODO: isFlagSet?
+        // if found neutral EC run code to convert it
+        if (neutralECLocs.size() != 0 && rc.getInfluence() > neutralECConvics.iterator().next() + 30 && !isFlagSet) {
+            spawnCapturePols();
+            System.out.println("Set flag in capture to true");
+            isFlagSet = true;
+            wasFlagSet = true;
+        }
+
+        if (enemyECLocs.size() != numEnlightenmentCenters) {
             processMuckrakers();
          }
 
-        System.out.println("Reached process muckrakers on turn " + rc.getRoundNum());
 
         // spawn scouting muckrakers and process them for info
         if (turnCount % 4 == 0 && turnCount < 1000) {
             spawnMuckrakers();
-            System.out.println("Reached spawn muckraker on turn " + rc.getRoundNum());
 
-        } else if (turnCount % 7 == 0 && turnCount > 50 && turnCount < 500 && enemyECLocs.size() != 0) {
+        } else if (turnCount % 7 == 0 && turnCount > 50 && turnCount < 500 && enemyECLocs.size() != 0 && !isFlagSet) {
             spawnSlanderers(); // adjust flag for slanderers? direction?
-            isFlagSet = true;
-            System.out.println("Reached spawn slanderer on turn " + rc.getRoundNum());
+            System.out.println("Set flag in slanderers to true");
 
+            isFlagSet = true;
+            wasFlagSet = true;
         } else if (turnCount % 11 == 0) {
             // spawnPoliticians(); // politicians can chase slanderers if it sees them to defend
-            System.out.println("Reached spawn politician on turn " + rc.getRoundNum());
 
         }
 
 
-        if (!isFlagSet) {
-            // todo: enemy ec flag muckraker surround flag
-            Util.trySetFlag(-2);
+        if (!isFlagSet && enemyECLocs.size() != 0 && !wasFlagSet && rc.getRoundNum() > 400) {
+            MapLocation enemyECToTarget = enemyECLocs.iterator().next();
+            int[] offsets = Util.getOffsetsFromLoc(rc.getLocation(), enemyECToTarget);
+            Util.trySetFlag(Util.encryptOffsets(offsets[0], offsets[1], 7));
         }
 
 
-        if (rc.getRoundNum() < 550){
-            rc.bid(1);
-        }
-        if (rc.getRoundNum() > 550){
-            rc.bid((int) (rc.getInfluence() * bidding));
-            bidding += .00015;
-        }
+        wasFlagSet = isFlagSet;
 
-        System.out.println("Reached end on turn " + rc.getRoundNum());
+          //  System.out.println("Reached end on turn " + rc.getRoundNum());
+        /*
+           if (isSurrounded()){
+               bidSurrounded();
+           }
+           else{
+               stuck = 0;
+               bidInfluence();
+           }
+         */
+
+
+
+    }
+
+    private static void bidSurrounded() throws GameActionException {
+        if (stuck < 15){
+            stuck++;
+            return;
+        }
+        if (rc.canBid((int) ( rc.getInfluence() * .1))){
+            rc.bid((int) (rc.getInfluence() * .1));
+        }
+    }
+
         //bidInfluence();
 
+    // TODO: bidding if surrounded
+
+
+    private static boolean isSurrounded() throws GameActionException {
+
+        for (Direction direction : directionsList) {
+            if (!rc.onTheMap(rc.getLocation().add(direction)))
+                continue;
+
+            if (!rc.isLocationOccupied(rc.getLocation().add(direction))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     static void bidInfluence() throws GameActionException {
@@ -102,7 +140,7 @@ public class EC extends RobotPlayer {
             if (rc.canBid(cap)){
                 rc.bid(cap);
             }
-            System.out.println("early round bid");
+
         } else if (rc.getRoundNum() < 1250) {
             if (previousVoteNum == rc.getTeamVotes()) {
                 cap += 2;
@@ -112,22 +150,20 @@ public class EC extends RobotPlayer {
                 if (rc.canBid(influenceBid)){
                     rc.bid(influenceBid);
                 }
-                System.out.println("over the cap");
+
             } else {
                 if (rc.canBid(influenceBid)){
                     rc.bid(influenceBid);
                 }
-                System.out.println("under the cap");
+
 
             }
         } else {
             int influenceBid = (int) (0.1 * rc.getInfluence());
-            System.out.println("bid: " + influenceBid);
+
             if (rc.canBid(influenceBid)){
                 rc.bid(influenceBid);
             }
-
-            System.out.println("end game");
 
         }
 
@@ -244,20 +280,20 @@ public class EC extends RobotPlayer {
                                 neutralECConvics.add(500);
                         }
                     }
-                }
+                } else {
 
-                int[] flagInfo = Util.decryptOffsets(curFlag);
-                switch (flagInfo[2]) {
-                    case 0:
-                        break; // function for edge
-                    case 1: // attack ec using flaginfo
-                        enemyECLocs.add(Util.getLocFromDecrypt(flagInfo, rc.getLocation()));
-                        break;
-                    default:
-                        break;
+                    int[] flagInfo = Util.decryptOffsets(curFlag);
+                    switch (flagInfo[2]) {
+                        case 0:
+                            break; // function for edge
+                        case 1: // attack ec using flaginfo
+                            enemyECLocs.add(Util.getLocFromDecrypt(flagInfo, rc.getLocation()));
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
-
         }
     }
 
