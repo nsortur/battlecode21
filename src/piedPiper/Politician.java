@@ -69,7 +69,12 @@ public class Politician extends RobotPlayer {
         if (defendPolitician) {
             defendTheEC();
             // build moving capabilityies
-            Util.greedyPath(new MapLocation(0,0 ));
+            for (int i = 0; i < 20; i++) {
+                Direction goTo = Util.randomDirection();
+                if (rc.canMove(goTo) && rc.getLocation().add(goTo).isWithinDistanceSquared(ecLoc, 30)) {
+                    rc.move(goTo);
+                }
+            }
         }
 
 
@@ -156,12 +161,11 @@ public class Politician extends RobotPlayer {
     }
 
     static void defendTheEC() throws GameActionException {
-        int action = rc.getType().actionRadiusSquared;
 
-        RobotInfo[] robots = rc.senseNearbyRobots(action, rc.getTeam().opponent());
-        if (robots.length > 2) {
-            if (rc.canEmpower(action)){
-                rc.empower(action);
+        RobotInfo[] robots = rc.senseNearbyRobots(actionRadius, rc.getTeam().opponent());
+        if (robots.length > 0) {
+            if (rc.canEmpower(actionRadius)){
+                rc.empower(actionRadius);
             }
         }
     }

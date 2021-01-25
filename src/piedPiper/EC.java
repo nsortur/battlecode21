@@ -22,7 +22,7 @@ public class EC extends RobotPlayer {
     static int[] polID = new int[4];
 
     // bidding variables
-    static int previousVoteNum = 0;
+    static double percentage = .01;
     static int cap = 2;
 
     static boolean wasFlagSet = false;
@@ -73,27 +73,22 @@ public class EC extends RobotPlayer {
 
         wasFlagSet = isFlagSet;
 
-          //  System.out.println("Reached end on turn " + rc.getRoundNum());
-        /*
-           if (isSurrounded()){
+
+
+        if (isSurrounded()) {
                bidSurrounded();
            }
            else{
                stuck = 0;
                bidInfluence();
            }
-         */
-
 
 
     }
 
     // TODO:
-    // 1. Add slanderer move away functionality (checkerboard?)
     // 2. Have all politicians that spawn with 25 influence guard then after 30 turns advance
-    // 3. Spawn attack politicians and add functionality for them (keep it same as other politician now but with more empowering)
     // 4. Create targeted muckrakers
-    // 5. Wait to gather influence if need to convert neutral EC
 
     private static boolean spawnTroop() throws GameActionException {
 
@@ -174,44 +169,20 @@ public class EC extends RobotPlayer {
         return true;
     }
 
+
     static void bidInfluence() throws GameActionException {
         if (rc.getTeamVotes() > 751){
             return;
         }
-
-        if (rc.getRoundNum() < 450) {
-            if (rc.canBid(cap)){
-                rc.bid(cap);
-            }
-
-        } else if (rc.getRoundNum() < 1250) {
-            if (previousVoteNum == rc.getTeamVotes()) {
-                cap += 2;
-            }
-            int influenceBid = (int) (0.1 * rc.getInfluence());
-            if (influenceBid > cap) {
-                if (rc.canBid(influenceBid)){
-                    rc.bid(influenceBid);
-                }
-
-            } else {
-                if (rc.canBid(influenceBid)){
-                    rc.bid(influenceBid);
-                }
-
-
-            }
-        } else {
-            int influenceBid = (int) (0.1 * rc.getInfluence());
-
-            if (rc.canBid(influenceBid)){
-                rc.bid(influenceBid);
-            }
-
+        if (rc.getRoundNum() > 500){
+            percentage += .001;
         }
-
-        previousVoteNum = rc.getTeamVotes();
-
+        int toBid = (int) (rc.getInfluence() * percentage);
+        if (toBid > 200 && rc.getRoundNum() < 850){
+            rc.bid(200);
+            return;
+        }
+        if (rc.canBid(toBid)) rc.bid(toBid);
 
     }
 
