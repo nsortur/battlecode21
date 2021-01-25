@@ -14,7 +14,7 @@ public class EC extends RobotPlayer {
     static ArrayList<MapLocation> capturedNeutralECs = new ArrayList<>();
 
     static int numEnlightenmentCenters = 0;
-    static double bidding = 0.15;
+    static int stuck = 0;
     // ID's of the scout's
     static LinkedHashSet<Integer> scoutID = new LinkedHashSet<>();
 
@@ -33,9 +33,6 @@ public class EC extends RobotPlayer {
         // IMPORTANT - We cannot spawn anything on the first turn
         // The order of these functions matter, it's the priority of spawning bots
 
-        if (enemyECLocs.size() + neutralECLocs.size() + capturedNeutralECs.size() == 3) {
-            System.out.println("DONE");
-        }
         // Get the number of enlightenment centers
         if (numEnlightenmentCenters == 0) {
             getNumEC();
@@ -62,7 +59,7 @@ public class EC extends RobotPlayer {
         if (turnCount % 4 == 0 && turnCount < 1000) {
             spawnMuckrakers();
 
-        } else if (turnCount % 7 == 0 && turnCount > 50 && turnCount < 500 && enemyECLocs.size() != 0) {
+        } else if (turnCount % 7 == 0 && turnCount > 50 && turnCount < 500 && enemyECLocs.size() != 0 && !isFlagSet) {
             spawnSlanderers(); // adjust flag for slanderers? direction?
             isFlagSet = true;
 
@@ -72,22 +69,52 @@ public class EC extends RobotPlayer {
         }
 
 
-        if (!isFlagSet) {
-            // todo: enemy ec flag muckraker surround flag
-            Util.trySetFlag(-2);
+        if (!isFlagSet && enemyECLocs.size() != 0) {
+            MapLocation enemyECToTarget = enemyECLocs.iterator().next();
+            int[] offsets = Util.getOffsetsFromLoc(rc.getLocation(), enemyECToTarget);
+            Util.trySetFlag(Util.encryptOffsets(offsets[0], offsets[1], 7));
         }
 
+          //  System.out.println("Reached end on turn " + rc.getRoundNum());
+           if (isSurrounded()){
+               bidSurrounded();
+           }
+           else{
+               stuck = 0;
+               bidInfluence();
+           }
 
-        if (rc.getRoundNum() < 550){
-            rc.bid(1);
+
+
+    }
+
+    private static void bidSurrounded() throws GameActionException {
+        if (stuck < 15){
+            stuck++;
+            return;
         }
-        if (rc.getRoundNum() > 550){
-            rc.bid((int) (rc.getInfluence() * bidding));
-            bidding += .00015;
+        if (rc.canBid((int) ( rc.getInfluence() * .1))){
+            rc.bid((int) (rc.getInfluence() * .1));
         }
+    }
 
         //bidInfluence();
 
+    // TODO: bidding if surrounded
+
+
+    private static boolean isSurrounded() throws GameActionException {
+
+        for (Direction direction : directionsList) {
+            if (!rc.onTheMap(rc.getLocation().add(direction)))
+                continue;
+
+            if (!rc.isLocationOccupied(rc.getLocation().add(direction))) {
+                return false;
+            }
+        }
+        System.out.println("I am at " + rc.getLocation() + " and am surrounded");
+        return true;
     }
 
     static void bidInfluence() throws GameActionException {
@@ -123,8 +150,6 @@ public class EC extends RobotPlayer {
             if (rc.canBid(influenceBid)){
                 rc.bid(influenceBid);
             }
-
-            System.out.println("end game");
 
         }
 
@@ -242,6 +267,7 @@ public class EC extends RobotPlayer {
                         }
                     }
                 } else {
+
                     int[] flagInfo = Util.decryptOffsets(curFlag);
                     switch (flagInfo[2]) {
                         case 0:
@@ -254,7 +280,6 @@ public class EC extends RobotPlayer {
                     }
                 }
             }
-
         }
     }
 

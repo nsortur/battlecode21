@@ -13,7 +13,7 @@ public class Slanderer extends RobotPlayer {
             ecID = Util.getECID();
             ecLoc = Util.locationOfFriendlyEC();
             checkFlag();
-            rc.setFlag(10);
+            Util.trySetFlag(Util.getECID());
         }
 
         moveAway();
@@ -50,7 +50,7 @@ public class Slanderer extends RobotPlayer {
             // TODO: change to move anywhere i can away
             Util.tryMove(rc.getLocation().directionTo(ecLocTeam).opposite());
         }
-        if (rc.isReady()) {
+        if (rc.isReady() && enemyECLoc != null) {
             Direction optDir = Direction.NORTH;
             int maxDist = rc.adjacentLocation(optDir).distanceSquaredTo(enemyECLoc);;
             for (Direction direction : directions) {

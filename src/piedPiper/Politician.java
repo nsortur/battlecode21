@@ -4,12 +4,12 @@ import battlecode.common.*;
 
 import java.util.HashSet;
 
-// 4 Types of Politcians
+// 4 Types of Politicians
 // 1. Convert Politicians - given a location - go there and convert (flag code of 5)
 // 2. Defend Politicians - given a location, and must defend (flag code of 6)
 // 3. Defend Slanderer Politicians  - given enemy EC - must go in opposite direction until a few slanderers in sight
 // then space out away from other politicians by moving away from them (flag code of 7)
-// 4. Other Politicans - randomly created and slanderer spawned - must go around and move using muckraker code
+// 4. Other Politicians - randomly created and slanderer spawned - must go around and move using muckraker code
 // and only kill slanderers if it can, same with enlightenment centers, and maybe politicians as well? (flag code of 8)
 
 public class Politician extends RobotPlayer {
@@ -35,7 +35,7 @@ public class Politician extends RobotPlayer {
             ecID = Util.getECID();
             ecLoc = Util.locationOfFriendlyEC();
             checkRole();
-        } else if (rc.getFlag(rc.getID()) == 10) {
+        } else if (rc.getFlag(rc.getID()) != 0) {
             otherPolitician = true;
         }
 
@@ -63,16 +63,8 @@ public class Politician extends RobotPlayer {
             defendSlanderer();
         }
         if (otherPolitician){
-            // MAKE IT SAME AS MUCKRAKER ALGORITHM!!!
-            RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
-            if (attackable.length > 2) {
-                if (rc.canEmpower(actionRadius)) {
-                    rc.empower(actionRadius);
-                }
-            }
-
+            convertedAttack();
         }
-
     }
 
     private static void defendSlanderer() {
@@ -96,7 +88,7 @@ public class Politician extends RobotPlayer {
         } else if (ecFlagInfo[2] == 6) {
             targetLoc = Util.getLocFromDecrypt(ecFlagInfo, ecLoc);
             defendPolitician = true;
-        } else if (ecFlagInfo[2] == 7) {
+        } else if (ecFlagInfo[2] == 9) {
             targetLoc = Util.getLocFromDecrypt(ecFlagInfo, ecLoc);
             defendSlandererPolitician = true;
         } else if (ecFlagInfo[2] == 8) {
@@ -106,9 +98,6 @@ public class Politician extends RobotPlayer {
             otherPolitician = true;
         }
     }
-
-
-    // TODO: Greedy Path DOES NOT WORK
 
     /**
      * Go towards enemy EC and kaboom
@@ -136,7 +125,9 @@ public class Politician extends RobotPlayer {
             RobotInfo maybeNeutralEC = rc.senseRobotAtLocation(targetLoc);
             int distToEC = rc.getLocation().distanceSquaredTo(targetLoc);
             if (maybeNeutralEC.team == rc.getTeam() && distToEC < 4) {
-                rc.empower(4);
+                if (rc.canEmpower(4)){
+                    rc.empower(4);
+                }
             }
         }
         Util.greedyPath(targetLoc);
@@ -144,9 +135,46 @@ public class Politician extends RobotPlayer {
     }
 
     static void defendTheEC() throws GameActionException {
-        RobotInfo[] robots = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-        if (robots.length > 6) {
-            rc.empower(rc.getType().actionRadiusSquared);
+        int action = rc.getType().actionRadiusSquared;
+
+        RobotInfo[] robots = rc.senseNearbyRobots(action, rc.getTeam().opponent());
+        if (robots.length > 2) {
+            if (rc.canEmpower(action)){
+                rc.empower(action);
+            }
         }
+    }
+
+    static void convertedAttack() throws GameActionException {
+
+        if (targetLoc == null) {
+            int ecID = Util.tryGetFlag(rc.getID());
+            int[] ecFlagInfo = Util.decryptOffsets(Util.tryGetFlag(ecID));
+
+            RobotInfo[] ourRobots = rc.senseNearbyRobots(rc.getType().detectionRadiusSquared, rc.getTeam());
+            for (RobotInfo robot : ourRobots) {
+                if (robot.type == RobotType.ENLIGHTENMENT_CENTER) {
+                    ecLoc = robot.location;
+                }
+            }
+
+            if (ecFlagInfo[2] == 7) {
+                targetLoc = Util.getLocFromDecrypt(ecFlagInfo, ecLoc);
+            } else {
+                Util.tryMove(Util.randomDirection());
+            }
+
+        } else {
+            // whether to use old attack function
+            RobotInfo[] attackable = rc.senseNearbyRobots(4, enemy);
+            for (RobotInfo robot : attackable) {
+                if (robot.type == RobotType.ENLIGHTENMENT_CENTER && rc.canEmpower(4)) {
+                    rc.empower(4);
+                }
+            }
+            System.out.println("Going to: " + targetLoc);
+            Util.greedyPath(targetLoc);
+        }
+
     }
 }

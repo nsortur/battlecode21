@@ -8,7 +8,7 @@ public class Muckraker extends RobotPlayer {
     static int ecID;
     static MapLocation ecLoc;
     static final int actionRadius = rc.getType().actionRadiusSquared;
-
+    static MapLocation enemyECLoc;
     static Direction dir = Direction.NORTH;
 
     static void run() throws GameActionException {
@@ -18,12 +18,13 @@ public class Muckraker extends RobotPlayer {
             dir = calculateOptimalDirection();
         }
 
-
         tryKillSlanderer();
         isCloseToNeutralEC();
 
         if (isCloseToEnemyEC()) {
-            // doing things
+            enemyECLoc();
+            if (!rc.getLocation().isAdjacentTo(enemyECLoc))
+                Util.greedyPath(enemyECLoc);
         } else {
             appliedMoveAwayV3();
         }
@@ -193,10 +194,12 @@ public class Muckraker extends RobotPlayer {
     static boolean tryKillSlanderer() throws GameActionException {
         boolean killedSlanderer = false;
 
-        RobotInfo[] robots = rc.senseNearbyRobots(actionRadius, rc.getTeam().opponent()); // sense all robots in action radius
+        RobotInfo[] robots = rc.senseNearbyRobots(actionRadius, rc.getTeam().opponent()); // sense all enemy robots in action radius
         for (RobotInfo robot: robots) {
-            if (robot.type == RobotType.SLANDERER && robot.team != rc.getTeam()) {
-                if (rc.canExpose(robot.location)) rc.expose(robot.location);
+            if (robot.type == RobotType.SLANDERER) {
+                if (rc.canExpose(robot.location)){
+                    rc.expose(robot.location);
+                }
                 // TODO: ADD FLAG THAT TELLS EC KILLED SLANDERER **
                 killedSlanderer = true;
             }
@@ -214,18 +217,26 @@ public class Muckraker extends RobotPlayer {
         RobotInfo[] robots = rc.senseNearbyRobots();
         for (RobotInfo robot : robots) {
             if (robot.type == RobotType.ENLIGHTENMENT_CENTER && robot.team == rc.getTeam().opponent()) {
-                MapLocation enemyECLoc = robot.location;
-                Util.greedyPath(enemyECLoc);
-                int x_offset = enemyECLoc.x - ecLoc.x;
-                int y_offset = enemyECLoc.y - ecLoc.y;
-
-                if (Util.trySetFlag(Util.encryptOffsets(x_offset, y_offset, 1))) // System.out.println("Flag set!");
-
-                    return true;
+                return true;
             }
         }
         return false;
     }
+
+    static void enemyECLoc() throws GameActionException {
+        RobotInfo[] robots = rc.senseNearbyRobots();
+        for (RobotInfo robot : robots) {
+            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && robot.team == rc.getTeam().opponent()) {
+                enemyECLoc = robot.location;
+                int x_offset = enemyECLoc.x - ecLoc.x;
+                int y_offset = enemyECLoc.y - ecLoc.y;
+
+                if (Util.trySetFlag(Util.encryptOffsets(x_offset, y_offset, 1)))
+                    return;
+            }
+        }
+    }
+
 
     /**
      * Checks to see if a robot is close to a neutral EC, and if it is sets the robot's flag
@@ -258,7 +269,7 @@ public class Muckraker extends RobotPlayer {
                 } else if (convic < 431) {
                     dictVal = 8;
                 } else {
-                    System.out.println("impossiblee");
+                    System.out.println("impossible");
                 }
 
                 if (Util.trySetFlag(Util.encryptOffsetsNeutral(x_offset, y_offset, dictVal))) {
