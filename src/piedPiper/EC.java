@@ -28,7 +28,7 @@ public class EC extends RobotPlayer {
     static boolean wasFlagSet = false;
 
     static String[] smmp = {"S", "M", "M", "P", "S", "M", "M", "p"};
-    static String[] sppm = {"S", "P", "P", "m"};
+    static String[] sppm = {"S", "P", "P", "M"};
 
     static int indexTroop = 0;
 
@@ -37,6 +37,7 @@ public class EC extends RobotPlayer {
 
     static void run() throws GameActionException {
         boolean isFlagSet = false;
+        System.out.println("Was set flag is" + wasFlagSet);
         // IMPORTANT - We cannot spawn anything on the first turn
         // The order of these functions matter, it's the priority of spawning bots
 
@@ -58,7 +59,7 @@ public class EC extends RobotPlayer {
             wasFlagSet = true;
         }
 
-        // System.out.println(numEnlightenmentCenters + " and " + enemyECLocs.size());
+        System.out.println(numEnlightenmentCenters + " and " + enemyECLocs.size());
 
         if (turnCount > 1) isFlagSet = spawnTroop();
 
@@ -97,60 +98,35 @@ public class EC extends RobotPlayer {
     private static boolean spawnTroop() throws GameActionException {
 
         String troopToSpawn = "S";
-        if (turnCount > 500) {
+        if (turnCount > 700) {
             troopToSpawn = sppm[indexTroop % 4];
         } else {
             troopToSpawn = smmp[indexTroop % 8];
         }
 
-
-        System.out.println("Troop it should spawn " + troopToSpawn);
-
         if (rc.isReady()) {
             switch (troopToSpawn) {
                 case "S":
-                    int infl = (int) (0.75 * rc.getInfluence());
-                    if (spawnSlanderers(infl)) indexTroop += 1;
-                    System.out.println("Spawned slanderer with " + infl);
-                    return false;
+                    spawnSlanderers((int) (0.75 * rc.getInfluence()));
                 case "P":
-                    if (spawnPoliticians(25)) indexTroop += 1;
-                    System.out.println("Spawned politician with " + 25);
-                    return false;
-
+                    spawnPoliticians(25);
                 case "M":
-                    if (spawnMuckrakers(1)) indexTroop += 1;
-                    System.out.println("Spawned muck with " + 1);
-                    return false;
-                case "m":
-                    if (rc.getInfluence() > 400) {
-                        if (spawnMuckrakers((int) (0.1 * rc.getInfluence()))) indexTroop+=1;
-                    } else {
-                        if (spawnMuckrakers(1)) indexTroop+=1;
-                    }
-                    return false;
+                    spawnMuckrakers(1);
                 case "p":
                     if (rc.getInfluence() > 800) {
                         if (enemyECLocs.size() != 0) {
-                            int inflPol = (int) (0.5 * rc.getInfluence());
-                            spawnBotToLocation(randomElement(enemyECLocs), 5, RobotType.POLITICIAN, inflPol);
-                            System.out.println("Spawned big pol with " + inflPol);
-                            indexTroop += 1;
-                            wasFlagSet = true;
-                            return true;
+                            spawnBotToLocation(randomElement(enemyECLocs), 5, RobotType.POLITICIAN, (int) (0.5 * rc.getInfluence()));
                         } else {
-                            int inflNewPol = (int) (0.4 * rc.getInfluence());
-                            if (spawnPoliticians(inflNewPol)) indexTroop += 1;
-                            System.out.println("Spawned med pol with " + inflNewPol);
-                            return false;
+                            spawnPoliticians(25);
                         }
+                        wasFlagSet = true;
+                        return true;
                     } else {
-                        if (spawnPoliticians(25)) indexTroop += 1;
-                        System.out.println("Spawned politician with " + 25);
-                        return false;
+                        spawnPoliticians(25);
                     }
             }
 
+            indexTroop += 1;
         }
 
         return false;
@@ -264,12 +240,11 @@ public class EC extends RobotPlayer {
     }
 
 
-    static boolean spawnPoliticians(int infl) throws GameActionException {
+    static void spawnPoliticians(int infl) throws GameActionException {
         Direction dir = getOpenDirection();
         if (dir != null) {
-            return spawnBot(RobotType.POLITICIAN, dir, infl); // if infl is very high make big boy politician and convert
+            spawnBot(RobotType.POLITICIAN, dir, infl); // if infl is very high make big boy politician and convert
         }
-        return false;
     }
 
     /**
@@ -278,12 +253,11 @@ public class EC extends RobotPlayer {
      * @throws GameActionException
      */
 
-    static boolean spawnSlanderers(int infl) throws GameActionException {
+    static void spawnSlanderers(int infl) throws GameActionException {
         Direction dir = getOpenDirection();
         if (dir != null) {
-            return spawnBot(RobotType.SLANDERER, getOpenDirection(), infl); // change?
+            spawnBot(RobotType.SLANDERER, getOpenDirection(), infl); // change?
         }
-        return false;
     }
 
     /**
@@ -291,15 +265,13 @@ public class EC extends RobotPlayer {
      *
      * @throws GameActionException
      */
-    static boolean spawnMuckrakers(int infl) throws GameActionException {
+    static void spawnMuckrakers(int infl) throws GameActionException {
         Direction dir = getOpenDirection();
         if (dir != null) {
             if (spawnBot(RobotType.MUCKRAKER, dir, infl)) {
                 scoutID.add(rc.senseRobotAtLocation(rc.adjacentLocation(dir)).ID);
-                return true;
             }
         }
-        return false;
 
     }
 
