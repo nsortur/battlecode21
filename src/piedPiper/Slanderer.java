@@ -11,6 +11,7 @@ public class Slanderer extends RobotPlayer {
     static void run() throws GameActionException {
         if (turnCount == 1) {
             ecID = Util.getECID();
+            int debugVal = Util.tryGetFlag(ecID);
             ecLoc = Util.locationOfFriendlyEC();
             checkFlag();
             Util.trySetFlag(Util.getECID());

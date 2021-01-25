@@ -62,7 +62,6 @@ public class Muckraker extends RobotPlayer {
         }
 
         int min = findMinIdx(ranking);
-        System.out.println(newDirectionList.get(min));
         return newDirectionList.get(min);
 
     }

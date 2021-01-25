@@ -25,6 +25,8 @@ public class EC extends RobotPlayer {
     static int previousVoteNum = 0;
     static int cap = 2;
 
+    static boolean wasFlagSet = false;
+
     // TODO: Fix neutral EC bugs (Neel)
     // TODO: Replenish defendPoliticians
 
@@ -38,19 +40,24 @@ public class EC extends RobotPlayer {
             getNumEC();
         }
 
-        // if found neutral EC run code to convert it
-        if (neutralECLocs.size() != 0 && rc.getInfluence() > neutralECConvics.iterator().next() + 30) {
-            spawnCapturePols();
-        }
+
 
         // spawn defensive politicians if one is lost? keep track of ID's and make sure all of them are here
         if (turnCount > 20) {
             if (checkIfStillDefensePoliticians()) {
                 isFlagSet = true;
+                wasFlagSet = true;
             }
         }
 
-        if (enemyECLocs.size() != numEnlightenmentCenters) { // TODO: isFlagSet?
+        // if found neutral EC run code to convert it
+        if (neutralECLocs.size() != 0 && rc.getInfluence() > neutralECConvics.iterator().next() + 30 && !isFlagSet) {
+            spawnCapturePols();
+            isFlagSet = true;
+            wasFlagSet = true;
+        }
+
+        if (enemyECLocs.size() != numEnlightenmentCenters) {
             processMuckrakers();
          }
 
@@ -62,20 +69,24 @@ public class EC extends RobotPlayer {
         } else if (turnCount % 7 == 0 && turnCount > 50 && turnCount < 500 && enemyECLocs.size() != 0 && !isFlagSet) {
             spawnSlanderers(); // adjust flag for slanderers? direction?
             isFlagSet = true;
-
+            wasFlagSet = true;
         } else if (turnCount % 11 == 0) {
             // spawnPoliticians(); // politicians can chase slanderers if it sees them to defend
 
         }
 
 
-        if (!isFlagSet && enemyECLocs.size() != 0) {
+        if (!isFlagSet && enemyECLocs.size() != 0 && !wasFlagSet) {
             MapLocation enemyECToTarget = enemyECLocs.iterator().next();
             int[] offsets = Util.getOffsetsFromLoc(rc.getLocation(), enemyECToTarget);
             Util.trySetFlag(Util.encryptOffsets(offsets[0], offsets[1], 7));
         }
 
+
+        wasFlagSet = isFlagSet;
+
           //  System.out.println("Reached end on turn " + rc.getRoundNum());
+        /*
            if (isSurrounded()){
                bidSurrounded();
            }
@@ -83,6 +94,7 @@ public class EC extends RobotPlayer {
                stuck = 0;
                bidInfluence();
            }
+         */
 
 
 
@@ -113,7 +125,6 @@ public class EC extends RobotPlayer {
                 return false;
             }
         }
-        System.out.println("I am at " + rc.getLocation() + " and am surrounded");
         return true;
     }
 
@@ -126,7 +137,7 @@ public class EC extends RobotPlayer {
             if (rc.canBid(cap)){
                 rc.bid(cap);
             }
-            System.out.println("early round bid");
+
         } else if (rc.getRoundNum() < 1250) {
             if (previousVoteNum == rc.getTeamVotes()) {
                 cap += 2;
@@ -136,17 +147,17 @@ public class EC extends RobotPlayer {
                 if (rc.canBid(influenceBid)){
                     rc.bid(influenceBid);
                 }
-                System.out.println("over the cap");
+
             } else {
                 if (rc.canBid(influenceBid)){
                     rc.bid(influenceBid);
                 }
-                System.out.println("under the cap");
+
 
             }
         } else {
             int influenceBid = (int) (0.1 * rc.getInfluence());
-            System.out.println("bid: " + influenceBid);
+
             if (rc.canBid(influenceBid)){
                 rc.bid(influenceBid);
             }

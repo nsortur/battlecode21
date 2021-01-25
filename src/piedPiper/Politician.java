@@ -2,6 +2,7 @@ package piedPiper;
 
 import battlecode.common.*;
 
+import java.util.Arrays;
 import java.util.HashSet;
 
 // 4 Types of Politicians
@@ -36,6 +37,7 @@ public class Politician extends RobotPlayer {
             ecLoc = Util.locationOfFriendlyEC();
             checkRole();
         } else if (rc.getFlag(rc.getID()) != 0) {
+            ecID = Util.tryGetFlag(rc.getID());
             otherPolitician = true;
         }
 
@@ -68,9 +70,6 @@ public class Politician extends RobotPlayer {
     }
 
     private static void defendSlanderer() {
-        System.out.println("Enemy ec loc at " + ecLoc);
-        System.out.println();
-        System.out.println();
        // rc.resign();
     }
 
@@ -114,7 +113,6 @@ public class Politician extends RobotPlayer {
                 ourRobotsNew.add(robot);
             }
         }
-        System.out.println(ourRobotsNew);
         for (RobotInfo robot : attackable) {
             if (robot.type == RobotType.ENLIGHTENMENT_CENTER && rc.canEmpower(2) && ourRobotsNew.size() < 1) {
                 rc.empower(2);
@@ -146,9 +144,7 @@ public class Politician extends RobotPlayer {
     }
 
     static void convertedAttack() throws GameActionException {
-
         if (targetLoc == null) {
-            int ecID = Util.tryGetFlag(rc.getID());
             int[] ecFlagInfo = Util.decryptOffsets(Util.tryGetFlag(ecID));
 
             RobotInfo[] ourRobots = rc.senseNearbyRobots(rc.getType().detectionRadiusSquared, rc.getTeam());
@@ -158,8 +154,9 @@ public class Politician extends RobotPlayer {
                 }
             }
 
-            if (ecFlagInfo[2] == 7) {
+            if (ecLoc != null && ecFlagInfo[2] == 7) {
                 targetLoc = Util.getLocFromDecrypt(ecFlagInfo, ecLoc);
+
             } else {
                 Util.tryMove(Util.randomDirection());
             }
