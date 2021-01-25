@@ -28,6 +28,7 @@ public class Muckraker extends RobotPlayer {
         } else {
             appliedMoveAwayV3();
         }
+       // sense robots an if it sees enemy ec then go to adjacent location
 
     }
 
