@@ -155,7 +155,7 @@ public class Politician extends RobotPlayer {
                 }
             }
         }
-        System.out.println("Going to: " + targetLoc);
+        // ystem.out.println("Going to: " + targetLoc);
         Util.greedyPath(targetLoc);
 
     }
@@ -223,7 +223,7 @@ public class Politician extends RobotPlayer {
                     rc.empower(4);
                 }
             }
-            System.out.println("Going to: " + targetLoc);
+            // System.out.println("Going to: " + targetLoc);
             Util.greedyPath(targetLoc);
         }
 

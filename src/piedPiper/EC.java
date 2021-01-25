@@ -27,7 +27,7 @@ public class EC extends RobotPlayer {
     static double percentage = .01;
     static int cap = 2;
 
-    static boolean wasFlagSet = false;
+    static int wasFlagSet = 0;
 
     static String[] smsmsp = {"S", "M", "S", "M", "S", "P"};
     static String[] smmp = {"S", "M", "M", "P", "S", "M", "M", "p"};
@@ -40,7 +40,7 @@ public class EC extends RobotPlayer {
 
     static void run() throws GameActionException {
         boolean isFlagSet = false;
-        System.out.println("Was set flag is" + wasFlagSet);
+        // System.out.println("Was set flag is" + wasFlagSet);
         // IMPORTANT - We cannot spawn anything on the first turn
         // The order of these functions matter, it's the priority of spawning bots
 
@@ -59,34 +59,31 @@ public class EC extends RobotPlayer {
         if (neutralECLocs.size() != 0 && rc.getInfluence() > neutralECConvics.iterator().next() + 30) {
             spawnCapturePols();
             isFlagSet = true;
-            wasFlagSet = true;
+            wasFlagSet = rc.getRoundNum();
         }
 
-        System.out.println(numEnlightenmentCenters + " and " + enemyECLocs.size());
+        // System.out.println(numEnlightenmentCenters + " and " + enemyECLocs.size());
 
         if (turnCount > 1) isFlagSet = spawnTroop();
 
 
-        if (!isFlagSet && enemyECLocs.size() != 0 && !wasFlagSet) {
+        if (!isFlagSet && enemyECLocs.size() != 0 && rc.getRoundNum() - wasFlagSet > 4) {
+            wasFlagSet = rc.getRoundNum();
             MapLocation enemyECToTarget = enemyECLocs.iterator().next();
             int[] offsets = Util.getOffsetsFromLoc(rc.getLocation(), enemyECToTarget);
             Util.trySetFlag(Util.encryptOffsets(offsets[0], offsets[1], 7));
         }
 
-
-        wasFlagSet = isFlagSet;
-
-
+        if (isFlagSet) {
+            wasFlagSet = rc.getRoundNum();
+        }
 
         if (isSurrounded()) {
-               bidSurrounded();
-           }
-           else{
-               stuck = 0;
-               bidInfluence();
-           }
-
-
+            bidSurrounded();
+        } else {
+           stuck = 0;
+           bidInfluence();
+        }
     }
 
     // TODO:
@@ -94,7 +91,7 @@ public class EC extends RobotPlayer {
     // 4. Create targeted muckrakers
 
     private static boolean spawnTroop() throws GameActionException {
-        if (neutralECLocs.size() + capturedNeutralECs.size() == 0) {
+        if (neutralECLocs.size() + capturedNeutralECs.size() == 0 && rc.getRoundNum() < 250) {
             if (rc.getInfluence() > 70) {
                 spawnSlanderers(rc.getInfluence()-1);
             } else {
@@ -102,9 +99,9 @@ public class EC extends RobotPlayer {
             }
         } else {
             String troopToSpawn = "S";
-            if (turnCount > 700) {
+            if (rc.getRoundNum() > 700) {
                 troopToSpawn = sppm[indexTroop % 4];
-            } else if (turnCount > 250) {
+            } else if (rc.getRoundNum() > 250) {
                 troopToSpawn = smmp[indexTroop % 8];
             } else {
                 troopToSpawn = smsmsp[indexTroop % 6];
@@ -126,7 +123,7 @@ public class EC extends RobotPlayer {
                                 spawnPoliticians(25);
                             }
                             indexTroop += 1;
-                            wasFlagSet = true;
+                            wasFlagSet = rc.getRoundNum();
                             return true;
                         } else {
                             spawnPoliticians(25);
@@ -191,7 +188,8 @@ public class EC extends RobotPlayer {
             percentage += .001;
         }
         int toBid = (int) (rc.getInfluence() * percentage);
-        if (toBid > 200 && rc.getRoundNum() < 850){
+
+        if (toBid > 200 && rc.getRoundNum() < 850 && rc.canBid(200)){
             rc.bid(200);
             return;
         }

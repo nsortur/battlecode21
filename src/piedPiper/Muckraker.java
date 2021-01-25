@@ -38,7 +38,7 @@ public class Muckraker extends RobotPlayer {
                 if (rc.canEmpower(4)) {
                     rc.empower(4);
                 }
-            } else {
+            } else if (enemy.getType() == RobotType.SLANDERER) {
                 Util.greedyPath(enemy.location);
             }
         }
