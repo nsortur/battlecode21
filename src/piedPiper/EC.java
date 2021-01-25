@@ -106,8 +106,8 @@ public class EC extends RobotPlayer {
             percentage += .001;
         }
         int toBid = (int) (rc.getInfluence() * percentage);
-        if (toBid > 100 && rc.getRoundNum() < 1250){
-            rc.bid(100);
+        if (toBid > 200 && rc.getRoundNum() < 850){
+            rc.bid(200);
             return;
         }
         if (rc.canBid(toBid)) rc.bid(toBid);
