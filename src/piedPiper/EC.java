@@ -27,6 +27,11 @@ public class EC extends RobotPlayer {
 
     static boolean wasFlagSet = false;
 
+    static String[] smmp = {"S", "M", "M", "P"};
+    static String[] sppm = {"S", "P", "P", "M"};
+
+    static int indexTroop = 0;
+
     // TODO: Fix neutral EC bugs (Neel)
     // TODO: Replenish defendPoliticians
 
@@ -41,14 +46,11 @@ public class EC extends RobotPlayer {
             getNumEC();
         }
 
-        // spawn defensive politicians if one is lost? keep track of ID's and make sure all of them are here
-        if (turnCount > 20) {
-            if (checkIfStillDefensePoliticians()) {
-                System.out.println("Set flag in defense to true");
-                isFlagSet = true;
-                wasFlagSet = true;
-            }
+        // process mucks
+        if (enemyECLocs.size() != numEnlightenmentCenters) {
+            processMuckrakers();
         }
+
 
         // if found neutral EC run code to convert it
         if (neutralECLocs.size() != 0 && rc.getInfluence() > neutralECConvics.iterator().next() + 30 && !isFlagSet) {
@@ -58,25 +60,9 @@ public class EC extends RobotPlayer {
             wasFlagSet = true;
         }
 
-        if (enemyECLocs.size() != numEnlightenmentCenters) {
-            processMuckrakers();
-         }
+        System.out.println(numEnlightenmentCenters + " and " + enemyECLocs.size());
 
-
-        // spawn scouting muckrakers and process them for info
-        if (turnCount % 4 == 0 && turnCount < 1000) {
-            spawnMuckrakers();
-
-        } else if (turnCount % 7 == 0 && turnCount > 50 && turnCount < 500 && enemyECLocs.size() != 0 && !isFlagSet) {
-            spawnSlanderers(); // adjust flag for slanderers? direction?
-            System.out.println("Set flag in slanderers to true");
-
-            isFlagSet = true;
-            wasFlagSet = true;
-        } else if (turnCount % 11 == 0) {
-            // spawnPoliticians(); // politicians can chase slanderers if it sees them to defend
-
-        }
+        if (turnCount > 1) spawnTroop();
 
 
         if (!isFlagSet && enemyECLocs.size() != 0 && !wasFlagSet && rc.getRoundNum() > 400) {
@@ -100,6 +86,47 @@ public class EC extends RobotPlayer {
          */
 
 
+
+    }
+
+    // TODO:
+    // 1. Add slanderer move away functionality (checkerboard?)
+    // 2. Have all politicians that spawn with 25 influence guard then after 30 turns advance
+    // 3. Spawn attack/roam politicians and add functionality for them (keep it same as other politician now but with more empowering)
+    // 4. Create targeted muckrakers
+    // 5. Wait to gather influence if need to convert neutral EC
+
+    private static void spawnTroop() throws GameActionException {
+
+        String troopToSpawn = "S";
+        if (turnCount > 700) {
+            troopToSpawn = sppm[indexTroop % 4];
+        } else {
+            troopToSpawn = smmp[indexTroop % 4];
+        }
+
+        if (rc.isReady()) {
+            Direction dir = getOpenDirection();
+
+            switch (troopToSpawn) {
+                case "S":
+                    if (dir != null) {
+                        spawnBot(RobotType.SLANDERER, getOpenDirection(), (int) (0.75 * rc.getInfluence())); // change?
+                    }
+                case "P":
+                    if (dir != null) {
+                        spawnBot(RobotType.POLITICIAN, dir, 25); // if infl is very high make big boy politician and convert
+                    }
+                case "M":
+                    if (dir != null) {
+                        if (spawnBot(RobotType.MUCKRAKER, dir, 1)) {
+                            scoutID.add(rc.senseRobotAtLocation(rc.adjacentLocation(dir)).ID);
+                        }
+                    }
+            }
+
+            indexTroop += 1;
+        }
 
     }
 
