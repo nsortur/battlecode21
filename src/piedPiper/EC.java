@@ -104,7 +104,7 @@ public class EC extends RobotPlayer {
             String troopToSpawn = "S";
             if (turnCount > 700) {
                 troopToSpawn = sppm[indexTroop % 4];
-            } else if (turnCount > 400) {
+            } else if (turnCount > 250) {
                 troopToSpawn = smmp[indexTroop % 8];
             } else {
                 troopToSpawn = smsmsp[indexTroop % 6];
@@ -125,6 +125,7 @@ public class EC extends RobotPlayer {
                             } else {
                                 spawnPoliticians(25);
                             }
+                            indexTroop += 1;
                             wasFlagSet = true;
                             return true;
                         } else {

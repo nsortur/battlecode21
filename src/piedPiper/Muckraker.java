@@ -32,6 +32,17 @@ public class Muckraker extends RobotPlayer {
     }
 
     static void appliedMoveAwayV3() throws GameActionException {
+        RobotInfo[] enemies = rc.senseNearbyRobots(rc.getType().sensorRadiusSquared, rc.getTeam().opponent());
+        for (RobotInfo enemy : enemies) {
+            if (enemy.getType() == RobotType.SLANDERER && rc.getLocation().distanceSquaredTo(enemy.location) < rc.getType().actionRadiusSquared) {
+                if (rc.canEmpower(4)) {
+                    rc.empower(4);
+                }
+            } else {
+                Util.greedyPath(enemy.location);
+            }
+        }
+
         if (rc.onTheMap(rc.getLocation().add(dir)) && !rc.isLocationOccupied(rc.getLocation().add(dir))) {
             Util.tryMove(dir);
         } else {

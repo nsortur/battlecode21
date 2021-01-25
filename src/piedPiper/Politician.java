@@ -173,7 +173,7 @@ public class Politician extends RobotPlayer {
         }
 
         for (RobotInfo enemy : enemies) {
-            if (enemy.getType() == RobotType.MUCKRAKER && rc.getLocation().distanceSquaredTo(enemy.location) < 4) {
+            if (enemy.getType() == RobotType.MUCKRAKER && rc.getLocation().distanceSquaredTo(enemy.location) < rc.getType().actionRadiusSquared) {
                 if (rc.canEmpower(4)) {
                     rc.empower(4);
                 }
