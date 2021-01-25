@@ -22,7 +22,7 @@ public class EC extends RobotPlayer {
     static int[] polID = new int[4];
 
     // bidding variables
-    static int previousVoteNum = 0;
+    static double percentage = .01;
     static int cap = 2;
 
     static boolean wasFlagSet = false;
@@ -75,7 +75,7 @@ public class EC extends RobotPlayer {
         wasFlagSet = isFlagSet;
 
           //  System.out.println("Reached end on turn " + rc.getRoundNum());
-        /*
+
            if (isSurrounded()){
                bidSurrounded();
            }
@@ -83,9 +83,34 @@ public class EC extends RobotPlayer {
                stuck = 0;
                bidInfluence();
            }
-         */
 
 
+
+
+    }
+
+    private static void bidSurrounded() throws GameActionException {
+        if (stuck < 15){
+            stuck++;
+            return;
+        }
+        if (rc.getInfluence() > 200) rc.bid((int) (rc.getInfluence() * .1));
+    }
+
+
+    static void bidInfluence() throws GameActionException {
+        if (rc.getTeamVotes() > 751){
+            return;
+        }
+        if (rc.getRoundNum() > 500){
+            percentage += .001;
+        }
+        int toBid = (int) (rc.getInfluence() * percentage);
+        if (toBid > 100 && rc.getRoundNum() < 1250){
+            rc.bid(100);
+            return;
+        }
+        if (rc.canBid(toBid)) rc.bid(toBid);
 
     }
 
@@ -130,17 +155,6 @@ public class EC extends RobotPlayer {
 
     }
 
-    private static void bidSurrounded() throws GameActionException {
-        if (stuck < 15){
-            stuck++;
-            return;
-        }
-        if (rc.canBid((int) ( rc.getInfluence() * .1))){
-            rc.bid((int) (rc.getInfluence() * .1));
-        }
-    }
-
-        //bidInfluence();
 
     // TODO: bidding if surrounded
 
@@ -158,46 +172,6 @@ public class EC extends RobotPlayer {
         return true;
     }
 
-    static void bidInfluence() throws GameActionException {
-        if (rc.getTeamVotes() > 751){
-            return;
-        }
-
-        if (rc.getRoundNum() < 450) {
-            if (rc.canBid(cap)){
-                rc.bid(cap);
-            }
-
-        } else if (rc.getRoundNum() < 1250) {
-            if (previousVoteNum == rc.getTeamVotes()) {
-                cap += 2;
-            }
-            int influenceBid = (int) (0.1 * rc.getInfluence());
-            if (influenceBid > cap) {
-                if (rc.canBid(influenceBid)){
-                    rc.bid(influenceBid);
-                }
-
-            } else {
-                if (rc.canBid(influenceBid)){
-                    rc.bid(influenceBid);
-                }
-
-
-            }
-        } else {
-            int influenceBid = (int) (0.1 * rc.getInfluence());
-
-            if (rc.canBid(influenceBid)){
-                rc.bid(influenceBid);
-            }
-
-        }
-
-        previousVoteNum = rc.getTeamVotes();
-
-
-    }
 
     static boolean checkIfStillDefensePoliticians() throws GameActionException {
         MapLocation[] locations = new MapLocation[4];
