@@ -2,8 +2,7 @@ package piedPiper;
 
 import battlecode.common.*;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.*;
 
 // 4 Types of Politicians
 // 1. Convert Politicians - given a location - go there and convert (flag code of 5)
@@ -22,22 +21,40 @@ public class Politician extends RobotPlayer {
 
     static MapLocation targetLoc;
 
+    // If we want to attack enemy EC
     static boolean convertPolitician = false;
 
+    // for neutral EC
     static boolean capturePolitician = false;
+    static boolean henchCapturePolitician = false;
+    static boolean jenCapturePolitician = false; // because it's a small one
+
     static int otherID;
 
     static boolean defendPolitician = false;
     static boolean defendSlandererPolitician = false;
     static boolean otherPolitician = false;
 
+    static Direction dir = Direction.NORTH;
+
+
     static void run() throws GameActionException {
+        if (!capturePolitician || !defendPolitician) {
+            if (rc.getEmpowerFactor(rc.getTeam(), 0) > 1.5) {
+                RobotInfo[] robots = rc.senseNearbyRobots();
+                if (robots.length >= 2) {
+                    if (rc.isReady()) {
+                        rc.empower(actionRadius);
+                    }
+                }
+            }
+        }
+
         if (turnCount == 1 && rc.getFlag(rc.getID()) == 0) {
             ecID = Util.getECID();
             ecLoc = Util.locationOfFriendlyEC();
             checkRole();
         } else if (rc.getFlag(rc.getID()) != 0) {
-            ecID = Util.tryGetFlag(rc.getID());
             otherPolitician = true;
         }
 
@@ -50,6 +67,11 @@ public class Politician extends RobotPlayer {
                 if (otherID == 0) {
                     if (robot.influence == 23) {
                         otherID = robot.ID;
+                        henchCapturePolitician = true;
+                    } else if (robot.influence == 82 || robot.influence == 154 || robot.influence == 225 || robot.influence == 297 ||
+                            robot.influence == 368 || robot.influence == 441 || robot.influence == 510){
+                        otherID = robot.ID;
+                        jenCapturePolitician = true;
                     }
                 }
             }
@@ -57,14 +79,15 @@ public class Politician extends RobotPlayer {
         }
 
         if (defendPolitician) {
-            Util.greedyPath(targetLoc);
             defendTheEC();
+            Util.greedyPath(targetLoc);
         }
 
         if (defendSlandererPolitician){
             defendSlanderer();
         }
         if (otherPolitician){
+            dir = calculateOptimalDirection();
             convertedAttack();
         }
     }
@@ -105,26 +128,20 @@ public class Politician extends RobotPlayer {
      */
     static void attackEC(Team team) throws GameActionException {
 
-        RobotInfo[] attackable = rc.senseNearbyRobots(2, team);
-        RobotInfo[] ourRobots = rc.senseNearbyRobots(2, rc.getTeam());
-        HashSet<RobotInfo> ourRobotsNew = new HashSet<>();
-        for (RobotInfo robot : ourRobots) {
-            if (robot.ID != otherID) {
-                ourRobotsNew.add(robot);
-            }
-        }
-        for (RobotInfo robot : attackable) {
-            if (robot.type == RobotType.ENLIGHTENMENT_CENTER && rc.canEmpower(2) && ourRobotsNew.size() < 1) {
-                rc.empower(2);
+        if (henchCapturePolitician) {
+            RobotInfo[] robots = rc.senseNearbyRobots(2);
+            for (RobotInfo robot : robots) {
+                if (robot.type == RobotType.ENLIGHTENMENT_CENTER && rc.canEmpower(2) && robots.length == 1 && robot.team == team) {
+                    rc.empower(2);
+                }
             }
         }
 
-        if (rc.canDetectLocation(targetLoc)) {
-            RobotInfo maybeNeutralEC = rc.senseRobotAtLocation(targetLoc);
-            int distToEC = rc.getLocation().distanceSquaredTo(targetLoc);
-            if (maybeNeutralEC.team == rc.getTeam() && distToEC < 4) {
-                if (rc.canEmpower(4)){
-                    rc.empower(4);
+        if (jenCapturePolitician) {
+            RobotInfo[] robots = rc.senseNearbyRobots(2);
+            for (RobotInfo robot : robots) {
+                if (robot.type == RobotType.ENLIGHTENMENT_CENTER && rc.canEmpower(2) && robot.team.equals(Team.NEUTRAL)) {
+                    rc.empower(2);
                 }
             }
         }
@@ -151,6 +168,7 @@ public class Politician extends RobotPlayer {
             for (RobotInfo robot : ourRobots) {
                 if (robot.type == RobotType.ENLIGHTENMENT_CENTER) {
                     ecLoc = robot.location;
+                    ecID = robot.getID();
                 }
             }
 
@@ -158,7 +176,19 @@ public class Politician extends RobotPlayer {
                 targetLoc = Util.getLocFromDecrypt(ecFlagInfo, ecLoc);
 
             } else {
-                Util.tryMove(Util.randomDirection());
+                // muckraker move algorithm goes here
+                RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
+                HashSet<RobotInfo> mucks = new HashSet<>();
+                for (RobotInfo robot : attackable) {
+                    if (robot.type == RobotType.MUCKRAKER || robot.type == RobotType.SLANDERER) {
+                        mucks.add(robot);
+                    }
+                }
+                if (mucks.size() > 3 && rc.canEmpower(actionRadius)) {
+                    rc.empower(actionRadius);
+                }
+
+                appliedMoveAwayV3();
             }
 
         } else {
@@ -174,4 +204,138 @@ public class Politician extends RobotPlayer {
         }
 
     }
+
+
+    static void appliedMoveAwayV3() throws GameActionException {
+        if (rc.onTheMap(rc.getLocation().add(dir)) && !rc.isLocationOccupied(rc.getLocation().add(dir))) {
+            Util.tryMove(dir);
+        } else {
+            dir = moveAwayV3();
+            Util.tryMove(dir);
+        }
+    }
+
+    static Direction moveAwayV3() throws GameActionException {
+        int[] ranking = new int[8];
+        int index = 0;
+
+        List<Direction> newDirectionList = directionsList;
+        Collections.shuffle(newDirectionList);
+
+        MapLocation rcLoc = rc.getLocation();
+        for (Direction dir : newDirectionList) {
+            MapLocation loc1 = rcLoc.add(dir);
+            MapLocation loc2 = loc1.add(dir);
+            MapLocation loc3 = loc2.add(dir);
+
+            MapLocation[] locations = {loc1, loc2, loc3};
+
+            for (MapLocation location : locations) {
+                ranking[index] += calculateValue(location);
+            }
+            index += 1;
+        }
+
+        int min = findMinIdx(ranking);
+        return newDirectionList.get(min);
+
+    }
+
+    /**
+     * Find min value in array of numbers
+     * @param numbers
+     * @return
+     */
+    static int findMinIdx(int[] numbers) {
+        if (numbers == null || numbers.length == 0) return -1; // Saves time for empty array
+        // As pointed out by ZouZou, you can save an iteration by assuming the first index is the smallest
+        int minVal = numbers[0]; // Keeps a running count of the smallest value so far
+        int minIdx = 0; // Will store the index of minVal
+        for(int idx=1; idx<numbers.length; idx++) {
+            if(numbers[idx] < minVal) {
+                minVal = numbers[idx];
+                minIdx = idx;
+            }
+        }
+        return minIdx;
+    }
+
+    static int calculateValue(MapLocation location) throws GameActionException {
+
+        if (!rc.onTheMap(location)) {
+            return 1000;
+        }
+        RobotInfo robot = rc.senseRobotAtLocation(location);
+        if (robot == null) {
+            return 0;
+        } else if (robot.team == rc.getTeam() && robot.getType() == RobotType.SLANDERER) {
+            return 50;
+        } else if (robot.team == rc.getTeam() && robot.type == RobotType.POLITICIAN) {
+            return 20;
+        } else {
+            return 0;
+        }
+    }
+
+
+    /**
+     * Calculates an optimal direction to move based on the robots around
+     *
+     * @return a direction to move in
+     * @throws GameActionException
+     */
+
+    static Direction calculateOptimalDirection() throws GameActionException {
+        RobotInfo[] robots = rc.senseNearbyRobots(30, rc.getTeam());
+        ArrayList<Direction> dirOppEdge = directionsOppositeEdge();
+        int[] numOfRobotsInDir = new int[8];
+
+        if (robots.length == 0) {
+            return Util.randomDirection();
+        } else if (dirOppEdge.size() != 0) {
+            return dirOppEdge.get(new Random().nextInt(dirOppEdge.size()));
+        } else {
+            for (RobotInfo robot : robots) {
+                Direction oppInDir = rc.getLocation().directionTo(robot.location);
+                numOfRobotsInDir[directionsList.indexOf(oppInDir)] += 1;
+            }
+            int max = numOfRobotsInDir[0];
+            int index = 0;
+            int highestIndex = 0;
+            for (int val : numOfRobotsInDir) {
+                if (val > max) {
+                    max = val;
+                    highestIndex = index;
+                }
+                index += 1;
+            }
+            Random ran = new Random();
+            int x = ran.nextInt(2) - 1;
+
+            // TODO: problem is they tend to head southwest, because if val isn't GREATER then max, they ignore it
+            // when you do the opposite of the middle values, you get southwest
+            return directions[((highestIndex)+x+8) % 8].opposite();
+        }
+    }
+
+
+    /**
+     * Checks if a scout is next to an edge
+     *
+     * @return a list of directions that are opposite edge
+     * @throws GameActionException
+     */
+    static ArrayList<Direction> directionsOppositeEdge() throws GameActionException{
+        ArrayList<Direction> oppDir = new ArrayList<>();
+
+        for(Direction dir : directions) {
+            MapLocation adjLoc = rc.adjacentLocation(dir);
+            if (!rc.onTheMap(adjLoc)) {
+                oppDir.add(dir.opposite());
+            }
+        }
+        return oppDir;
+    }
+
+
 }

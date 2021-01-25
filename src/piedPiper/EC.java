@@ -32,6 +32,7 @@ public class EC extends RobotPlayer {
 
     static void run() throws GameActionException {
         boolean isFlagSet = false;
+        System.out.println("Was set flag is" + wasFlagSet);
         // IMPORTANT - We cannot spawn anything on the first turn
         // The order of these functions matter, it's the priority of spawning bots
 
@@ -40,11 +41,10 @@ public class EC extends RobotPlayer {
             getNumEC();
         }
 
-
-
         // spawn defensive politicians if one is lost? keep track of ID's and make sure all of them are here
         if (turnCount > 20) {
             if (checkIfStillDefensePoliticians()) {
+                System.out.println("Set flag in defense to true");
                 isFlagSet = true;
                 wasFlagSet = true;
             }
@@ -53,6 +53,7 @@ public class EC extends RobotPlayer {
         // if found neutral EC run code to convert it
         if (neutralECLocs.size() != 0 && rc.getInfluence() > neutralECConvics.iterator().next() + 30 && !isFlagSet) {
             spawnCapturePols();
+            System.out.println("Set flag in capture to true");
             isFlagSet = true;
             wasFlagSet = true;
         }
@@ -68,6 +69,8 @@ public class EC extends RobotPlayer {
 
         } else if (turnCount % 7 == 0 && turnCount > 50 && turnCount < 500 && enemyECLocs.size() != 0 && !isFlagSet) {
             spawnSlanderers(); // adjust flag for slanderers? direction?
+            System.out.println("Set flag in slanderers to true");
+
             isFlagSet = true;
             wasFlagSet = true;
         } else if (turnCount % 11 == 0) {
@@ -76,7 +79,7 @@ public class EC extends RobotPlayer {
         }
 
 
-        if (!isFlagSet && enemyECLocs.size() != 0 && !wasFlagSet) {
+        if (!isFlagSet && enemyECLocs.size() != 0 && !wasFlagSet && rc.getRoundNum() > 400) {
             MapLocation enemyECToTarget = enemyECLocs.iterator().next();
             int[] offsets = Util.getOffsetsFromLoc(rc.getLocation(), enemyECToTarget);
             Util.trySetFlag(Util.encryptOffsets(offsets[0], offsets[1], 7));
