@@ -26,6 +26,8 @@ public class EC extends RobotPlayer {
     // bidding variables
     static double percentage = .01;
     static int cap = 2;
+    static int oldVotes = 0;
+    static int amountToBid = 0;
 
     static int wasFlagSet = 0;
 
@@ -180,6 +182,7 @@ public class EC extends RobotPlayer {
     }
 
 
+
     static void bidInfluence() throws GameActionException {
         if (rc.getTeamVotes() > 751){
             return;
@@ -187,7 +190,14 @@ public class EC extends RobotPlayer {
         if (rc.getRoundNum() > 500){
             percentage += .001;
         }
+
+        if (rc.getInfluence() <= 100 && rc.canBid(5)) {
+            rc.bid(1);
+            return;
+        }
+
         int toBid = (int) (rc.getInfluence() * percentage);
+
 
         if (toBid > 200 && rc.getRoundNum() < 850 && rc.canBid(200)){
             rc.bid(200);
