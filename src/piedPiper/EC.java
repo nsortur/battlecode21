@@ -10,8 +10,10 @@ public class EC extends RobotPlayer {
     // The location of the enemy EC
     static LinkedHashSet<MapLocation> enemyECLocs = new LinkedHashSet<>();
     static LinkedHashSet<MapLocation> neutralECLocs = new LinkedHashSet<>();
-    static LinkedHashSet<Integer> neutralECConvics = new LinkedHashSet<>();
+    static ArrayList<Integer> neutralECConvics = new ArrayList<>();
+    static ArrayList<MapLocation> detectedNeutralECConvics = new ArrayList<>();
     static ArrayList<MapLocation> capturedNeutralECs = new ArrayList<>();
+
 
     static int numEnlightenmentCenters = 0;
     static int stuck = 0;
@@ -268,7 +270,7 @@ public class EC extends RobotPlayer {
         // also add 10
         spawnBotToLocation(neutralLoc, 8, RobotType.POLITICIAN, neutralConvic + 10);
         neutralECLocs.remove(neutralLoc);
-        neutralECConvics.remove(neutralConvic);
+        neutralECConvics.remove(neutralECConvics.iterator().next());
         capturedNeutralECs.add(neutralLoc);
     }
 
@@ -286,24 +288,31 @@ public class EC extends RobotPlayer {
                     // it's a neutral EC special flag
                     int[] neutralFlagInfo = Util.decryptOffsetsNeutral(curFlag);
                     MapLocation foundLoc = Util.getLocFromDecrypt(neutralFlagInfo, rc.getLocation());
-                    if (!capturedNeutralECs.contains(foundLoc)) {
+                    if (!detectedNeutralECConvics.contains(foundLoc)) {
                         neutralECLocs.add(foundLoc);
+                        detectedNeutralECConvics.add(foundLoc);
 
                         switch (neutralFlagInfo[2]) {
                             case 3:
                                 neutralECConvics.add(72);
+                                break;
                             case 4:
                                 neutralECConvics.add(144);
+                                break;
                             case 5:
                                 neutralECConvics.add(215);
+                                break;
                             case 6:
                                 neutralECConvics.add(287);
+                                break;
                             case 7:
                                 neutralECConvics.add(358);
+                                break;
                             case 8:
                                 neutralECConvics.add(431);
                             case 9:
                                 neutralECConvics.add(500);
+                                break;
                         }
                     }
                 } else {

@@ -35,6 +35,7 @@ public class Politician extends RobotPlayer {
     static boolean otherPolitician = false;
 
     static Direction dir = Direction.NORTH;
+    static Direction dirV4 = Direction.NORTH;
 
 
     static void run() throws GameActionException {
@@ -68,17 +69,12 @@ public class Politician extends RobotPlayer {
 
         if (defendPolitician) {
             defendTheEC();
-            // build moving capabilityies
-            if (turnCount < 45){
-                for (int i = 0; i < 20; i++) {
-                    Direction goTo = Util.randomDirection();
-                    if (rc.onTheMap(rc.getLocation().add(goTo)) && rc.canMove(goTo) && rc.getLocation().add(goTo).isWithinDistanceSquared(ecLoc, 30)){
-                        rc.move(goTo);
-                    }
-                }
-            } else{
-                if (rc.canEmpower(actionRadius)) rc.empower(actionRadius);
+            if (turnCount < 30) {
+                appliedMoveAwayV4();
+            } else {
+                appliedMoveAwayV3();
             }
+
         }
 
 
@@ -159,12 +155,15 @@ public class Politician extends RobotPlayer {
                 }
             }
         }
-
+        System.out.println("Going to: " + targetLoc);
         Util.greedyPath(targetLoc);
 
     }
 
     static void defendTheEC() throws GameActionException {
+
+        RobotInfo[] enemies = rc.senseNearbyRobots(rc.getType().sensorRadiusSquared, enemy);
+
 
         RobotInfo[] robots = rc.senseNearbyRobots(actionRadius, rc.getTeam().opponent());
         if (robots.length > 0) {
@@ -172,6 +171,17 @@ public class Politician extends RobotPlayer {
                 rc.empower(actionRadius);
             }
         }
+
+        for (RobotInfo enemy : enemies) {
+            if (enemy.getType() == RobotType.MUCKRAKER && rc.getLocation().distanceSquaredTo(enemy.location) < 4) {
+                if (rc.canEmpower(4)) {
+                    rc.empower(4);
+                }
+            } else {
+                Util.greedyPath(enemy.location);
+            }
+        }
+
     }
 
     static void convertedAttack() throws GameActionException {
@@ -229,6 +239,43 @@ public class Politician extends RobotPlayer {
         }
     }
 
+
+    static void appliedMoveAwayV4() throws GameActionException {
+        if (rc.onTheMap(rc.getLocation().add(dirV4)) && !rc.isLocationOccupied(rc.getLocation().add(dirV4))) {
+            Util.tryMove(dirV4);
+        } else {
+            dir = moveAwayV4();
+            Util.tryMove(dirV4);
+        }
+    }
+
+    static Direction moveAwayV4() throws GameActionException {
+        int[] ranking = new int[8];
+        int index = 0;
+
+        List<Direction> newDirectionList = directionsList;
+        Collections.shuffle(newDirectionList);
+
+        MapLocation rcLoc = rc.getLocation();
+        for (Direction dir : newDirectionList) {
+            MapLocation loc1 = rcLoc.add(dir);
+            MapLocation loc2 = loc1.add(dir);
+            MapLocation loc3 = loc2.add(dir);
+
+            MapLocation[] locations = {loc1, loc2, loc3};
+
+            for (MapLocation location : locations) {
+                ranking[index] += calculateValueV4(location);
+            }
+            index += 1;
+        }
+
+        int min = findMinIdx(ranking);
+        return newDirectionList.get(min);
+
+    }
+
+
     static Direction moveAwayV3() throws GameActionException {
         int[] ranking = new int[8];
         int index = 0;
@@ -277,22 +324,39 @@ public class Politician extends RobotPlayer {
     static int calculateValue(MapLocation location) throws GameActionException {
 
         if (!rc.onTheMap(location)) {
-            return -1000;
+            return 10;
         }
 
         RobotInfo robot = rc.senseRobotAtLocation(location);
         if (robot == null) {
-            return 5;
-        } else if (robot.type == RobotType.ENLIGHTENMENT_CENTER && (robot.team == Team.NEUTRAL || robot.team == rc.getTeam())) {
-            return 10000;
-        } else if (robot.team == rc.getTeam() & robot.type == RobotType.SLANDERER) {
             return -50;
-        } else if (robot.team == rc.getTeam().opponent() && robot.type == RobotType.POLITICIAN || robot.type == RobotType.MUCKRAKER) {
-            return -1000;
-        } else if (robot.team == rc.getTeam() && robot.type == RobotType.POLITICIAN) {
-            return -25;
-        } else {
+        }  else if (robot.team != rc.getTeam()) {
+            return -5000;
+        } else if (robot.team == rc.getTeam()) {
+            return 50;
+        }  else {
             return 0;
+        }
+    }
+
+
+    static int calculateValueV4(MapLocation location) throws GameActionException {
+
+        if (!rc.onTheMap(location)) {
+            return -100000;
+        }
+
+        RobotInfo robot = rc.senseRobotAtLocation(location);
+        if (robot == null) {
+            return 10;
+        }  else if (robot.team == rc.getTeam() && robot.type == RobotType.POLITICIAN) {
+            return 15;
+        } else if (robot.team != rc.getTeam()) {
+            return -50;
+        } else if (robot.team == rc.getTeam()) {
+            return 0;
+        } else {
+            return 20;
         }
     }
 
@@ -374,6 +438,8 @@ public class Politician extends RobotPlayer {
         }
         return Direction.NORTH;
     }
+
+
 
 
 

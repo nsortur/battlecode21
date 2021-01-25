@@ -211,7 +211,7 @@ public class Slanderer extends RobotPlayer {
         }
         RobotInfo robot = rc.senseRobotAtLocation(location);
         if (robot == null) {
-            return 5;
+            return 20;
         } else if (robot.type == RobotType.ENLIGHTENMENT_CENTER && (robot.team == Team.NEUTRAL || robot.team == rc.getTeam())) {
             return 10000;
         } else if (robot.team == rc.getTeam() & robot.type == RobotType.SLANDERER) {

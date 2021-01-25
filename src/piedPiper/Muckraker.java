@@ -267,8 +267,6 @@ public class Muckraker extends RobotPlayer {
                     dictVal = 7;
                 } else if (convic < 431) {
                     dictVal = 8;
-                } else {
-                    System.out.println("impossible");
                 }
 
                 if (Util.trySetFlag(Util.encryptOffsetsNeutral(x_offset, y_offset, dictVal))) {
