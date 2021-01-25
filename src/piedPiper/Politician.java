@@ -69,10 +69,16 @@ public class Politician extends RobotPlayer {
         if (defendPolitician) {
             defendTheEC();
             // build moving capabilityies
-            for (int i = 0; i < 20; i++) {
-                Direction goTo = Util.randomDirection();
-                if (rc.canMove(goTo) && rc.getLocation().add(goTo).isWithinDistanceSquared(ecLoc, 30)) {
-                    rc.move(goTo);
+            if (turnCount < 30) {
+                for (int i = 0; i < 20; i++) {
+                    Direction goTo = Util.randomDirection();
+                    if (rc.canMove(goTo) && rc.getLocation().add(goTo).isWithinDistanceSquared(ecLoc, 30)) {
+                        rc.move(goTo);
+                    }
+                }
+            } else {
+                if (rc.canEmpower(2)) {
+                    rc.empower(2);
                 }
             }
         }

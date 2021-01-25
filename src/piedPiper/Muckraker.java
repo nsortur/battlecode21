@@ -100,7 +100,7 @@ public class Muckraker extends RobotPlayer {
         } else if (robot.team == rc.getTeam().opponent() && robot.type == RobotType.POLITICIAN) {
             return 2;
         } else if (robot.team == rc.getTeam().opponent() && robot.type == RobotType.SLANDERER) {
-            return -15;
+            return -100000;
         } else {
             return 0;
         }

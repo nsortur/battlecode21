@@ -27,6 +27,7 @@ public class EC extends RobotPlayer {
 
     static boolean wasFlagSet = false;
 
+    static String[] smsmsp = {"S", "M", "S", "M", "S", "P"};
     static String[] smmp = {"S", "M", "M", "P", "S", "M", "M", "p"};
     static String[] sppm = {"S", "P", "P", "M"};
 
@@ -91,37 +92,46 @@ public class EC extends RobotPlayer {
     // 4. Create targeted muckrakers
 
     private static boolean spawnTroop() throws GameActionException {
-
-        String troopToSpawn = "S";
-        if (turnCount > 700) {
-            troopToSpawn = sppm[indexTroop % 4];
+        if (neutralECLocs.size() + capturedNeutralECs.size() == 0) {
+            if (rc.getInfluence() > 70) {
+                spawnSlanderers(rc.getInfluence()-1);
+            } else {
+                spawnMuckrakers(1);
+            }
         } else {
-            troopToSpawn = smmp[indexTroop % 8];
-        }
+            String troopToSpawn = "S";
+            if (turnCount > 700) {
+                troopToSpawn = sppm[indexTroop % 4];
+            } else if (turnCount > 400) {
+                troopToSpawn = smmp[indexTroop % 8];
+            } else {
+                troopToSpawn = smsmsp[indexTroop % 6];
+            }
 
-        if (rc.isReady()) {
-            switch (troopToSpawn) {
-                case "S":
-                    spawnSlanderers((int) (0.75 * rc.getInfluence()));
-                case "P":
-                    spawnPoliticians(25);
-                case "M":
-                    spawnMuckrakers(1);
-                case "p":
-                    if (rc.getInfluence() > 800) {
-                        if (enemyECLocs.size() != 0) {
-                            spawnBotToLocation(randomElement(enemyECLocs), 5, RobotType.POLITICIAN, (int) (0.5 * rc.getInfluence()));
+            if (rc.isReady()) {
+                switch (troopToSpawn) {
+                    case "S":
+                        spawnSlanderers((int) (0.75 * rc.getInfluence()));
+                    case "P":
+                        spawnPoliticians(25);
+                    case "M":
+                        spawnMuckrakers(1);
+                    case "p":
+                        if (rc.getInfluence() > 800) {
+                            if (enemyECLocs.size() != 0) {
+                                spawnBotToLocation(randomElement(enemyECLocs), 5, RobotType.POLITICIAN, (int) (0.5 * rc.getInfluence()));
+                            } else {
+                                spawnPoliticians(25);
+                            }
+                            wasFlagSet = true;
+                            return true;
                         } else {
                             spawnPoliticians(25);
                         }
-                        wasFlagSet = true;
-                        return true;
-                    } else {
-                        spawnPoliticians(25);
-                    }
-            }
+                }
 
-            indexTroop += 1;
+                indexTroop += 1;
+            }
         }
 
         return false;
