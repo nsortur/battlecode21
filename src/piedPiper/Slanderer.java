@@ -40,8 +40,8 @@ public class Slanderer extends RobotPlayer {
         if (EC.isSurrounded()) return;
             int index = directionsList.indexOf(dir);
             if (rc.getRoundNum() >= 650){
-                System.out.println(dir);
-                System.out.println(rc.adjacentLocation(dir));
+                // System.out.println(dir);
+                // System.out.println(rc.adjacentLocation(dir));
             }
             if (rc.onTheMap(rc.adjacentLocation(dir))){
                 MapLocation locToMove = rc.adjacentLocation(dir);

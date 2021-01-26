@@ -155,7 +155,7 @@ public class Politician extends RobotPlayer {
                 }
             }
         }
-        System.out.println("Going to: " + targetLoc);
+        // ystem.out.println("Going to: " + targetLoc);
         Util.greedyPath(targetLoc);
 
     }
@@ -173,7 +173,7 @@ public class Politician extends RobotPlayer {
         }
 
         for (RobotInfo enemy : enemies) {
-            if (enemy.getType() == RobotType.MUCKRAKER && rc.getLocation().distanceSquaredTo(enemy.location) < 4) {
+            if (enemy.getType() == RobotType.MUCKRAKER && rc.getLocation().distanceSquaredTo(enemy.location) < rc.getType().actionRadiusSquared) {
                 if (rc.canEmpower(4)) {
                     rc.empower(4);
                 }
@@ -223,7 +223,7 @@ public class Politician extends RobotPlayer {
                     rc.empower(4);
                 }
             }
-            System.out.println("Going to: " + targetLoc);
+            // System.out.println("Going to: " + targetLoc);
             Util.greedyPath(targetLoc);
         }
 
